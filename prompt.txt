@@ -1,0 +1,8 @@
+Crie uma pasta docs na raiz do projeto, com toda documentação
+necessária para que qualquer pessoa consiga entender os guidelines
+e padrões do projeto.
+Separe a documentação em arquivos .md, e crie um readme.md dentro
+da pasta docs para ser o índice da documentação.
+Não documente nada além do que já existe no projeto. Seja simples e direto, e
+não documente funcionalidades que não existem no projeto.
+Use também como referência o @PRD.md do projeto.

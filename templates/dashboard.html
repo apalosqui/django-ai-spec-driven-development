@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · Finanpy{% endblock %}
+{% block content %}
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold">Dashboard</h1>
+    <a href="{% url 'profiles:detail' %}" class="text-sky-400 hover:underline">Meu perfil</a>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Receitas</div>
+      <div class="text-2xl font-semibold text-emerald-400">R$ {{ income_total }}</div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Despesas</div>
+      <div class="text-2xl font-semibold text-rose-400">R$ {{ expense_total }}</div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Saldo</div>
+      <div class="text-2xl font-semibold">R$ {{ balance }}</div>
+    </div>
+  </div>
+
+  <h2 class="text-xl font-semibold mb-3">Últimas transações</h2>
+  <div class="space-y-2">
+    {% for obj in recent_transactions %}
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <div class="text-sm text-slate-400">{{ obj.date }} · {{ obj.account.name }} · {{ obj.category.name }}</div>
+          <div class="font-medium">{{ obj.description|default:'(sem descrição)' }}</div>
+        </div>
+        <div class="font-semibold {% if obj.kind == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
+          {% if obj.kind == 'income' %}+{% else %}-{% endif %} R$ {{ obj.amount }}
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-slate-400">Ainda não há transações.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

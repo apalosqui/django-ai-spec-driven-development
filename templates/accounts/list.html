@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Minhas contas · Finanpy{% endblock %}
+{% block content %}
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Minhas contas</h1>
+    <a href="{% url 'account_create' %}" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white">Nova conta</a>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for obj in object_list %}
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-medium">{{ obj.name }}</h2>
+            <p class="text-slate-400 text-sm">Saldo inicial: R$ {{ obj.opening_balance }}</p>
+          </div>
+          <div class="flex gap-2">
+            <a class="text-sky-400 hover:underline" href="{% url 'account_update' obj.pk %}">Editar</a>
+            <a class="text-rose-400 hover:underline" href="{% url 'account_delete' obj.pk %}">Remover</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-slate-400">Nenhuma conta cadastrada.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
+

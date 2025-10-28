@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Meu perfil · Finanpy{% endblock %}
+{% block content %}
+  <div class="max-w-xl mx-auto">
+    <h1 class="text-2xl font-semibold mb-4">Meu perfil</h1>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+      <dl class="space-y-2">
+        <div>
+          <dt class="text-slate-400 text-sm">E-mail</dt>
+          <dd class="font-medium">{{ request.user.email }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-400 text-sm">Nome completo</dt>
+          <dd class="font-medium">{{ profile.full_name|default:'(não informado)' }}</dd>
+        </div>
+      </dl>
+      <div class="mt-4">
+        <a href="{% url 'profiles:edit' %}" class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700">Editar</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Transações · Finanpy{% endblock %}
+{% block content %}
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Transações</h1>
+    <a href="{% url 'transaction_create' %}" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white">Nova transação</a>
+  </div>
+
+  <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4 bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+    <select name="account" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+      <option value="">Conta</option>
+      {% for a in accounts %}
+        <option value="{{ a.id }}" {% if request.GET.account == a.id|stringformat:'s' %}selected{% endif %}>{{ a.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="category" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+      <option value="">Categoria</option>
+      {% for c in categories %}
+        <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+    <input class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" type="date" name="date_from" value="{{ request.GET.date_from }}" placeholder="De" />
+    <input class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" type="date" name="date_to" value="{{ request.GET.date_to }}" placeholder="Até" />
+    <input class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar descrição" />
+    <div class="md:col-span-5">
+      <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700" type="submit">Filtrar</button>
+      <a class="ml-2 text-sky-400 hover:underline" href="{% url 'transaction_list' %}">Limpar</a>
+    </div>
+  </form>
+
+  <div class="space-y-2">
+    {% for obj in object_list %}
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <div class="text-sm text-slate-400">{{ obj.date }} · {{ obj.account.name }} · {{ obj.category.name }}</div>
+          <div class="font-medium">{{ obj.description|default:'(sem descrição)' }}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-semibold {% if obj.kind == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
+            {% if obj.kind == 'income' %}+{% else %}-{% endif %} R$ {{ obj.amount }}
+          </div>
+          <div class="text-sm"><a class="text-sky-400 hover:underline" href="{% url 'transaction_update' obj.pk %}">Editar</a> · <a class="text-rose-400 hover:underline" href="{% url 'transaction_delete' obj.pk %}">Remover</a></div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-slate-400">Nenhuma transação encontrada.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
+

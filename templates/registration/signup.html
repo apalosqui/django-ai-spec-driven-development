@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Cadastre-se · Finanpy{% endblock %}
+{% block content %}
+  <div class="max-w-md mx-auto">
+    <h1 class="text-2xl font-semibold mb-4">Cadastre-se</h1>
+    <form method="post" class="space-y-4 bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div>
+        <label class="block mb-1 text-sm text-slate-300" for="id_email">E-mail</label>
+        {{ form.email.as_widget(attrs={'class': 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-slate-300" for="id_password1">Senha</label>
+        {{ form.password1.as_widget(attrs={'class': 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-slate-300" for="id_password2">Confirmar senha</label>
+        {{ form.password2.as_widget(attrs={'class': 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+      </div>
+      <button class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90" type="submit">Criar conta</button>
+    </form>
+    <p class="mt-4 text-sm text-slate-400">Já possui conta? <a class="text-sky-400 hover:underline" href="{% url 'login' %}">Entrar</a></p>
+  </div>
+{% endblock %}
+

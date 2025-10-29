@@ -74,6 +74,7 @@ Entrada: start_date=today, horizonte=N meses. Inicialize saldos por conta = sald
 ## 8) UI (MVP)
 - Dashboard: saldo atual de Caixa e Economias; próximos 30 dias (cards por dia); alertas de saldo negativo futuro.
 - Calendário/Timeline: visão diária com ícones (salário, fixo, variável, fatura, aplicação/resgate).
+- Tabela diária: colunas compatíveis com a planilha base — Data, Entrada, Saída, Diário, Saldo.
 - Cartões: lista de faturas (aberta/próxima), total e datas; detalhe da fatura.
 - Economias: subcontas, extrato de aplicações/resgates; cores: tag-apply (aplicação) e tag-redeem (resgate).
 - Importador: wizard para mapear colunas da planilha para os modelos.
@@ -97,4 +98,3 @@ Entrada: start_date=today, horizonte=N meses. Inicialize saldos por conta = sald
 - Backend: Django 5.x, Django REST Framework; SQLite em dev, Postgres recomendado em produção.
 - Importação: openpyxl (XLSX), CSV nativo.
 - Frontend: DTL + Tailwind (CDN) no MVP; opcional HTMX.
-

@@ -3,7 +3,7 @@
 Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-plan.md`) em tarefas acionáveis.
 
 - [x] Models: `Account`, `SalaryRule`, `FixedExpense`, `VariableBudget`, `CreditCard`, `CardTransaction`, `Transfer`, `CardInvoice`, `ProjectionSnapshot`, `TransactionLog`
-- [ ] Migrações criadas e aplicadas
+- [x] Migrações criadas e aplicadas
 - [x] DRF: Serializers + ViewSets para todos os modelos acima (CRUD)
 - [x] Permissions por owner em todos os endpoints
 - [x] URLs/routers conectados sob `/api/`
@@ -12,12 +12,12 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - Aceite: endpoints GET/POST/PUT/DELETE funcionam isolando dados por usuário
 
 ## Sprint 2 (1–2 semanas)
-- [ ] Service `invoice_builder`: fechamento por (cartão, yyyy_mm) com base em `dia_fechamento`
-- [ ] Cálculo e persistência de `CardInvoice.total_calculado`
+- [x] Service `invoice_builder`: fechamento por (cartão, yyyy_mm) com base em `dia_fechamento`
+- [x] Cálculo e persistência de `CardInvoice.total_calculado`
 - [ ] Baixa no vencimento: debitar conta de pagamento em `data_vencimento`
-- [ ] Endpoints: GET `/api/card-invoices/?yyyy_mm=&card_id=`, POST `/api/card-invoices/rebuild`
+- [x] Endpoints: GET `/api/card-invoices/compute?yyyy_mm=&card_id=`, POST `/api/card-invoices/rebuild`
 - [ ] Testes básicos do fluxo de fatura (feliz + borda)
-- [ ] Docs atualizadas (seção faturas)
+- [x] Docs atualizadas (seção faturas)
 - Aceite: faturas geradas corretamente e baixa aplicada na data correta
 
 ## Sprint 3 (2 semanas)

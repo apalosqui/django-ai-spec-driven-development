@@ -1,5 +1,5 @@
-{% extends 'base.html' %}
-{% block title %}Entrar · Finanpy{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Entrar — Finanpy{% endblock %}
 {% block content %}
   <div class="max-w-md mx-auto">
     <h1 class="text-2xl font-semibold mb-4">Entrar</h1>
@@ -8,11 +8,13 @@
       {{ form.non_field_errors }}
       <div>
         <label class="block mb-1 text-sm text-slate-300" for="id_username">E-mail</label>
-        {{ form.username.as_widget(attrs={'class': 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+        {{ form.username }}
+        {{ form.username.errors }}
       </div>
       <div>
         <label class="block mb-1 text-sm text-slate-300" for="id_password">Senha</label>
-        {{ form.password.as_widget(attrs={'class': 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+        {{ form.password }}
+        {{ form.password.errors }}
       </div>
       <button class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90" type="submit">Entrar</button>
     </form>

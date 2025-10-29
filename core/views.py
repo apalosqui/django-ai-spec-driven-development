@@ -33,13 +33,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if sel_year <= 0:
             sel_year = today.year
 
-        first_day = date(sel_year, sel_month, 1)
+                first_day = date(sel_year, sel_month, 1)
         last_day = date(sel_year, sel_month, calendar.monthrange(sel_year, sel_month)[1])
-        # Carry-over base: from start of year (or previous year if Jan)
-        if sel_month > 1:
-            base_start = date(sel_year, 1, 1)
-        else:
-            base_start = date(sel_year - 1, 1, 1)
+        # Previous month first day (for table carry-over fetch)
+        p_year, p_month = sel_year, sel_month - 1
+        if p_month == 0:
+            p_month = 12
+            p_year -= 1
+        prev_first_day = date(p_year, p_month, 1)
+
+        # Carry-over base for cards (year-to-month aggregation)
+        base_start = date(sel_year, 1, 1) if sel_month > 1 else date(sel_year - 1, 1, 1)
         months_span = (sel_year - base_start.year) * 12 + sel_month
 
         accounts = account_selectors.active_by_user(user)
@@ -77,5 +81,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx
+
 
 

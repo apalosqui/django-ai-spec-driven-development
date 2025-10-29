@@ -1,0 +1,232 @@
+Obrigado, agora quero que você siga as instruções do prompt abaixo, altera o PRD.md e AGENTS.md e/ou qualquer arquivo relacionado a IA (como os agentes[podendo adicionar novos conforme a demanda]).
+Vamos construir, em Django + Django REST Framework, um sistema que substitui minha planilha financeira (anexo no projeto @planilha-base/Controle financeiro pessoal - base projeto.xlsx, utilize o openpyxl pra analisar a planilha e fazer alterações pertinentes nos requistos caso eles não estejam coerentes com a planilha) e projeta o impacto futuro de cada gasto registrado hoje (D-0) nos dias/meses/anos seguintes (D-n).
+Contexto BR: moeda BRL, timezone America/Sao_Paulo, datas no padrão DD-MM-YYYY.
+
+1) Objetivo do Produto
+
+Criar um app web que:
+
+Centralize receitas, gastos fixos, gastos variáveis, cartões de crédito e economias (reserva/projetos).
+
+Projete diariamente o saldo futuro por pelo menos 24 meses (configurável), refletindo:
+
+Regras de recebimento de salário (um ou mais dias no mês).
+
+Gastos fixos em datas específicas.
+
+Gastos variáveis distribuídos uniformemente por dia (projeção diária) nos meses subsequentes.
+
+Cartão de crédito: compras agrupadas por fatura e impacto na data de vencimento da fatura.
+
+Transferências entre “caixa” (conta corrente/carteira) e economias (reservas/projetos), com marcações visuais para “aplicar” (ir para economia) e “resgatar” (voltar para caixa).
+
+Traga um calendário/linha do tempo com saldos projetados e indicadores de risco (ex.: saldo negativo em data futura).
+
+2) Glossário
+
+Caixa: saldo disponível de liquidez imediata (espelha “saldo” da planilha).
+
+Economias: contas de poupança/projetos/reserva de emergência (subcontas).
+
+Fixo: despesa recorrente em datas específicas (ex.: aluguel dia 05).
+
+Variável: orçamento mensal (ex.: “Mercado R$ 900/mês”), espalhado dia a dia.
+
+Compra no cartão: não impacta “caixa” no dia da compra; impacta no vencimento (total da fatura).
+
+Aplicação (cash → economia) e Resgate (economia → cash): movimentos com tags de cor distintas.
+
+3) Requisitos Funcionais (RF)
+
+RF-01 Cadastro de contas: “Caixa” (obrigatória) e n contas de Economias.
+RF-02 Cadastro de salários: valor, regras mensais de recebimento (ex.: dia 5 e 20; ou “último dia útil”).
+RF-03 Cadastro de gastos fixos: valor, periodicidade (mensal/anual), dia de vencimento e conta pagadora (geralmente “Caixa”).
+RF-04 Cadastro de gastos variáveis (orçamentos) ex.: Mercado, Lazer, etc. : valor mensal → distribuição diária uniforme na projeção.
+RF-05 Cartões de crédito: múltiplos cartões, cada um com dia de fechamento e dia de vencimento.
+RF-06 Transações do cartão: compras com data, valor, categoria e cartão; compõem a fatura do ciclo; a baixa ocorre no vencimento debitando “Caixa”.
+RF-07 Aplicação (Caixa→Economia) e Resgate (Economia→Caixa) com status visual:
+
+Aplicação = “guardar dinheiro” (cor A)
+
+Resgate = “voltar para caixa” (cor B)
+
+RF-08 Projeção diária automática por N meses (default 24):
+
+Somar receitas (salários, resgates), subtrair fixos no dia de vencimento, subtrair variável (valor_mensal/qtde_dias_do_mês) por dia, e subtrair total da fatura nos dias de vencimento de cada cartão.
+
+O saldo projetado é cumulativo dia a dia.
+RF-09 Visões:
+
+Calendário diário (heatmap do saldo, ícones de eventos).
+
+Tabela (por dia, com colunas: data, saldo projetado, lançamentos do dia).
+
+Mês consolidado (entradas/saídas, total variável, total fixo, cartões, aplicações, resgates, saldo final).
+RF-11 Usuários e autenticação (e-mail/senha).
+RF-12 Permissões: dados isolados por usuário.
+RF-13 Auditoria: created_at/updated_at, quem criou/alterou.
+RF-14 Configurações: N meses de projeção, formato de data, moeda (BRL fixo) e timezone (America/Sao_Paulo).
+RF-15 Desempenho: projeção incremental (recalcular apenas janelas afetadas por alterações).
+RF-16 Anotações de cor (UI) para aplicações/resgates, igual à semântica da planilha.
+
+4) Regras de Negócio (RN)
+
+RN-01 Salários: podem ser múltiplos por mês; se cair em feriado/fim de semana, opção “adiantar” para dia útil anterior (configurável).
+RN-02 Variáveis: valor_mensal é distribuído por dia: cota_dia = valor_mensal / dias_do_mes. Em projeção de vários meses, replicar automaticamente (permite ajuste por categoria e por mês).
+RN-03 Fixos: lançados exatamente no dia de vencimento; se “pagar adiantado” for marcado, lançar no dia útil anterior.
+RN-04 Cartão:
+
+Fechamento define quais compras entram na fatura.
+
+Vencimento: onera Caixa com o total da fatura (por cartão).
+
+Múltiplos cartões → múltiplas baixas em datas de vencimento diferentes.
+RN-05 Aplicação/Resgate: movimentações entre contas internas não alteram patrimônio total, só a distribuição entre “Caixa” e “Economias”; devem aparecer na linha do tempo e nos saldos.
+RN-06 Projeção: saldo_dia = saldo_(dia-1) + receitas_dia − fixos_dia − variáveis_dia − faturas_dia ± transferências_dia.
+RN-07 Consistência: nenhuma transação pode ficar sem conta/cartão; validações fortes.
+
+5) Modelos de Dados (ORM Django – proposta)
+
+User (Django default)
+
+Account (tipo: CAIXA | ECONOMIA; nome; cor_tag; saldo_inicial; owner)
+
+SalaryRule (user, valor, regra: {dias=[5,20]} ou {“ultimo_dia_util”:true})
+
+FixedExpense (user, nome, valor, dia_vencimento, periodicidade: MENSAL/ANUAL, conta_pagadora=Account)
+
+VariableBudget (user, categoria, valor_mensal, ativo_bool)
+
+CreditCard (user, nome, dia_fechamento, dia_vencimento, conta_pagamento=Account)
+
+CardTransaction (cartao, data_compra, descricao, categoria, valor, parcelas_opc)
+
+CardInvoice (cartao, referencia_yyyy_mm, data_fechamento, data_vencimento, total_calculado, status: ABERTA/PAGA)
+
+Transfer (user, origem=Account, destino=Account, valor, data, tipo: APLICACAO|RESGATE) // usar para colorir
+
+TransactionLog (user, data, tipo: SALARIO|FIXO|VARIAVEL|FATURA|TRANSFER, ref_id, valor) // “evento” consolidado para projeção
+
+ProjectionSnapshot (user, data, saldo_projetado, meta_info_json) // opcional para cache
+
+Observação: não precisamos lançar “variável” como transação unitária; ela é gerada na projeção diária a partir de VariableBudget.
+
+6) Projeção — Algoritmo (alto nível)
+
+Dado start_date=today, horizonte=N meses:
+
+Inicialize saldo = saldo_caixa_inicial + somatório(saldos economias) (armazenar saldos por conta).
+
+Para cada dia d até horizonte:
+
+Entradas: salários (RN-01), resgates (Transfer destino=Caixa em d).
+
+Saídas: fixos com vencimento em d (RN-03), cota variável diária = soma de (valor_mensal / dias_no_mes(d)) para todos os budgets ativos, faturas de cartão que vencem em d (somatório CardInvoice.total_calculado).
+
+Transferências: aplicações (Caixa→Economia) e resgates (Economia→Caixa) com suas datas.
+
+Atualize saldos por conta e o saldo projetado do dia.
+
+Persistir ProjectionSnapshot (opcional cache) e expor via API.
+
+Faturas: calcule CardInvoice por (cartão, mês de referência) com base em CardTransaction entre (dia_fechamento_prev+1, dia_fechamento_atual). O total debita a conta_pagamento apenas na data_vencimento.
+
+7) API (OpenAPI – esqueleto)
+
+POST /auth/register, POST /auth/login
+
+GET/POST/PUT/DELETE /accounts/
+
+GET/POST/PUT/DELETE /salary-rules/
+
+GET/POST/PUT/DELETE /fixed-expenses/
+
+GET/POST/PUT/DELETE /variable-budgets/
+
+GET/POST/PUT/DELETE /credit-cards/
+
+GET/POST/PUT/DELETE /card-transactions/
+
+GET /card-invoices/?yyyy_mm=&card_id= (recalcula on-the-fly; POST /card-invoices/rebuild para toda base)
+
+GET/POST /transfers/
+
+GET /projection/?start=YYYY-MM-DD&months=24 → retorna lista diária {date, saldo, eventos:[...]}
+
+POST /import (XLSX/CSV com mapeamento assistido)
+
+GET /export.csv
+
+8) UI (MVP)
+
+Dashboard: saldo atual de Caixa e Economias; próximos 30 dias (cards por dia); alertas de saldo negativo futuro.
+
+Calendário/Timeline: visão diária com ícones (salário, fixo, variável, fatura, aplicação/resgate).
+
+Cartões: lista de faturas (aberta/próxima), total e datas; detalhe da fatura.
+
+Economias: subcontas, extrato de aplicações/resgates; cores:
+
+Aplicação (para economia): cor #A (use classe tag-apply)
+
+Resgate (volta ao caixa): cor #B (use classe tag-redeem)
+
+Importador: wizard para mapear colunas da planilha para os modelos.
+
+9) Tarefas Técnicas (Backlog inicial)
+
+Setup Django, DRF, Postgres, docker-compose, i18n/pt-BR, timezone America/Sao_Paulo.
+
+Models e migrações (itens da Seção 5).
+
+Serviços:
+
+invoice_builder (fecha faturas por cartão/mês)
+
+projection_engine (gera dia a dia com cache incremental)
+
+import_mapper (XLSX/CSV)
+
+APIs REST (Seção 7) + JWT (SimpleJWT).
+
+Seeds e fixtures de exemplo (cenários dos testes Gherkin).
+
+Frontend Django (templates/HTMX) ou React (opcional).
+
+Testes automatizados (pytest + pytest-django).
+
+Documentação (README + OpenAPI gerada).
+
+10) Performance & Escalabilidade
+
+Cache de projeção por janela (ex.: mês) invalidado somente quando entidades daquele período mudarem.
+
+Cálculo de variável diário feito on-the-fly com memoization.
+
+Paginação e filtros nas listas.
+
+11) Segurança e Qualidade
+
+Autorização por owner em todas as queries.
+
+Validações (dias de fechamento/vencimento válidos; datas; valores positivos).
+
+Lints, pre-commit, CI básico (pytest).
+
+12) Extras (opcionais)
+
+Suporte a 13º salário (parcela única em mês configurável).
+
+Metas de economia (objetivo por subconta, % atingido).
+
+Alertas (saldo negativo previsto; fatura acima da média).
+
+Gráficos mensais e acumulados.
+
+
+
+
+
+
+
+

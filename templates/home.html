@@ -1,9 +1,9 @@
-{% extends 'base.html' %}
-{% block title %}Finanpy · Controle suas finanças{% endblock %}
+﻿{% extends 'base.html' %}
+{% block title %}Finanpy Ã¢â‚¬â€ ProjeÃƒÂ§ÃƒÂ£o financeira pessoal{% endblock %}
 {% block content %}
   <section class="text-center py-12">
-    <h1 class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-sky-400">Controle suas finanças com simplicidade</h1>
-    <p class="mt-3 text-slate-300">Cadastre contas, categorias e transações. Visual moderno, rápido e consistente.</p>
+    <h1 class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-sky-400">ProjeÃ§Ã£o diÃ¡ria do seu saldo por atÃ© 24 meses</h1>
+    <p class="mt-3 text-slate-300">Cadastre contas, categorias e transaÃ¯Â¿Â½Ã¯Â¿Â½es. Visual moderno, rÃ¯Â¿Â½pido e consistente.</p>
     <div class="mt-6 flex items-center justify-center gap-3">
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ir para o painel</a>
@@ -13,4 +13,98 @@
       {% endif %}
     </div>
   </section>
-{% endblock %}
+  </section>`n{% endblock %}
+  <section class="py-8">
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
+        <h2 class="font-semibold mb-2">Como funciona</h2>
+        <p class="text-slate-300 text-sm">Projeção diária soma salários e resgates, subtrai fixos no vencimento, variável/dia e faturas no vencimento, mantendo um <em>saldo cumulativo</em>.</p>
+      </div>
+      <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
+        <h2 class="font-semibold mb-2">Contexto BR</h2>
+        <p class="text-slate-300 text-sm">Moeda BRL, timezone America/Sao_Paulo e datas no formato DD-MM-YYYY.</p>
+      </div>
+      <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
+        <h2 class="font-semibold mb-2">Cartões</h2>
+        <p class="text-slate-300 text-sm">Compras agrupadas por fatura. O débito acontece apenas na <strong>data de vencimento</strong> da fatura.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-8">
+    <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
+      <div class="flex items-end justify-between gap-4 mb-4">
+        <div>
+          <h2 class="font-semibold">Demonstração de Projeção (MVP)</h2>
+          <p class="text-slate-400 text-sm">Faça uma chamada ao endpoint e veja os próximos dias.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="start" type="date" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
+          <input id="months" type="number" min="1" max="24" value="1" class="w-24 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
+          <button id="btnProj" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ver projeção</button>
+        </div>
+      </div>
+      <div id="projHint" class="text-slate-400 text-sm mb-3">
+        {% if user.is_authenticated %}
+          Você está autenticado. A projeção usa seus dados atuais.
+        {% else %}
+          Para testar a projeção, <a class="text-sky-400 hover:underline" href="{% url 'login' %}">entre</a> ou <a class="text-sky-400 hover:underline" href="{% url 'signup' %}">cadastre-se</a>.
+        {% endif %}
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-300">
+            <tr>
+              <th class="px-3 py-2 text-left">Data</th>
+              <th class="px-3 py-2 text-right">Entrada</th>
+              <th class="px-3 py-2 text-right">Saída</th>
+              <th class="px-3 py-2 text-right">Diário</th>
+              <th class="px-3 py-2 text-right">Saldo</th>
+            </tr>
+          </thead>
+          <tbody id="projBody"></tbody>
+        </table>
+      </div>
+      <p id="projMsg" class="text-slate-400 text-sm mt-3"></p>
+    </div>
+  </section>
+  <script>
+    (function() {
+      const startEl = document.getElementById('start');
+      const monthsEl = document.getElementById('months');
+      const btn = document.getElementById('btnProj');
+      const body = document.getElementById('projBody');
+      const msg = document.getElementById('projMsg');
+      if (!btn) return;
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      if (startEl) startEl.value = `${yyyy}-${mm}-${dd}`;
+      btn.addEventListener('click', async () => {
+        body.innerHTML = '';
+        msg.textContent = '';
+        const start = startEl.value;
+        const months = monthsEl.value || '1';
+        try {
+          const res = await fetch(`/api/projection/?start=${start}&months=${months}`);
+          if (!res.ok) {
+            msg.textContent = 'Não foi possível obter a projeção. Verifique se está autenticado.';
+            return;
+          }
+          const data = await res.json();
+          const rows = data.slice(0, 14).map(d => `
+            <tr class=\"border-t border-slate-800\">
+              <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>
+              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>
+              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.saida).toFixed(2)}</td>
+              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>
+              <td class=\"px-3 py-2 text-right font-medium\">R$ ${Number(d.saldo).toFixed(2)}</td>
+            </tr>`).join('');
+          body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o período.</td></tr>';
+        } catch (e) {
+          msg.textContent = 'Erro inesperado ao consultar a projeção.';
+        }
+      });
+    })();
+  </script>

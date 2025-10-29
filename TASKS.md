@@ -30,6 +30,12 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - Aceite: série diária coerente e com eventos do dia
 
 ## Sprint 4 (1–2 semanas)
+- [ ] Atualizar landing/home para MVP (pivot DRF + projeção)
+- [ ] Incluir CTA e seção de demonstração da projeção (GET `/api/projection/`)
+- [ ] Texto e visual alinhados ao PRD (pt-BR, BRL, datas DD-MM-YYYY)
+- [ ] Aceite: home comunica valor e permite testar projeção (se logado)
+
+## Sprint 5 (1–2 semanas)
 - [ ] Export template CSV e endpoint GET `/api/export.csv`
 - [ ] Relatório CSV consolidado por período (cliente)
 - [ ] Docs (guia de exportação) e exemplos

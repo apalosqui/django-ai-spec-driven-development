@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from .models import Category
+from . import selectors as category_selectors
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -10,7 +11,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
     template_name = 'categories/list.html'
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        return category_selectors.by_user(self.request.user)
 
 
 class CategoryCreateView(LoginRequiredMixin, CreateView):
@@ -31,7 +32,7 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('category_list')
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        return category_selectors.by_user(self.request.user)
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
@@ -40,4 +41,4 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('category_list')
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        return category_selectors.by_user(self.request.user)

@@ -6,6 +6,8 @@ Objetivo
 Escopo
 - Layout base `templates/base.html` e parciais em `templates/_includes/`.
 - Páginas: landing pública, login, cadastro, dashboard e páginas dos CRUDs.
+- Calendário/Timeline com ícones por evento (salário, fixo, variável, fatura, aplicação/resgate).
+- Tabela diária compatível com a planilha (Data, Entrada, Saída, Diário, Saldo).
 - Acessibilidade (foco/contraste) e responsividade.
 
 Entradas
@@ -18,6 +20,7 @@ Processo
 - Definir o esqueleto do `base.html` (navbar, container, footer).
 - Criar parciais reutilizáveis (botões, formulários, mensagens).
 - Implementar páginas específicas conforme rotas disponíveis.
+- Incluir componentes de calendário/linha do tempo e tabela diária.
 
 Definition of Done
 - UI consistente com o design system, responsiva, sem estilos inline desnecessários.
@@ -30,4 +33,5 @@ Checklist
 - [ ] Base layout + CDN do Tailwind
 - [ ] Parciais reutilizáveis
 - [ ] Páginas essenciais (landing, auth, dashboard)
+- [ ] Calendário/Timeline + Tabela diária (Data/Entrada/Saída/Diário/Saldo)
 - [ ] Acessibilidade básica e responsividade

@@ -81,8 +81,9 @@ def compute_projection(user, start: date, months: int = 24) -> List[Dict]:
     results: List[Dict] = []
 
     for d in _daterange(start, end):
-        entries = 0.0
-        exits = 0.0
+        entries = 0.0  # receitas do dia (ex.: salários)
+        exits = 0.0    # saídas do dia (fixos e boletos/faturas pagas no dia)
+        diario = 0.0   # projeção de variável/dia
         events: List[Dict] = []
 
         # Salaries
@@ -105,12 +106,11 @@ def compute_projection(user, start: date, months: int = 24) -> List[Dict]:
                 exits += float(fx.amount)
                 events.append({'type': 'FIXO', 'name': fx.name, 'value': float(fx.amount)})
 
-        # Variable budgets (daily quota)
+        # Variable budgets (daily quota) — apenas na coluna "Diário"
         if variable_budgets:
-            daily = sum(float(v.monthly_amount) / _days_in_month(d) for v in variable_budgets)
-            exits += daily
-            if daily:
-                events.append({'type': 'VARIAVEL', 'value': round(daily, 2)})
+            diario = sum(float(v.monthly_amount) / _days_in_month(d) for v in variable_budgets)
+            if diario:
+                events.append({'type': 'VARIAVEL', 'value': round(diario, 2)})
 
         # Invoices due (baixa no vencimento)
         for inv in invoices_by_due.get(d, []):
@@ -121,8 +121,8 @@ def compute_projection(user, start: date, months: int = 24) -> List[Dict]:
         for tr in transfers_by_date.get(d, []):
             events.append({'type': 'TRANSFER', 'kind': tr.kind, 'value': float(tr.value)})
 
-        daily_net = entries - exits
-        balance = balance + daily_net
+        # Saldo = saldo anterior + entradas - saídas - variável/dia
+        balance = balance + entries - exits - diario
 
         # Optional snapshot cache per day
         ProjectionSnapshot.objects.update_or_create(
@@ -133,10 +133,9 @@ def compute_projection(user, start: date, months: int = 24) -> List[Dict]:
             'date': d.isoformat(),
             'entrada': round(entries, 2),
             'saida': round(exits, 2),
-            'diario': round(daily_net, 2),
+            'diario': round(diario, 2),
             'saldo': round(balance, 2),
             'eventos': events,
         })
 
     return results
-

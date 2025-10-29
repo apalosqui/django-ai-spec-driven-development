@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 from accounts import selectors as account_selectors
 from transactions import selectors as tx_selectors
 from transactions.models import Transaction
+from planning.services import compute_projection
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -37,26 +38,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         accounts = account_selectors.active_by_user(user)
 
-        # Totals only for selected month
-        month_qs = Transaction.objects.filter(account__user=user, date__gte=first_day, date__lte=last_day)
-        income = month_qs.filter(kind='income').aggregate(total=Sum('amount'))['total'] or 0
-        expense = month_qs.filter(kind='expense').aggregate(total=Sum('amount'))['total'] or 0
-
-        # Balance approximation: opening balances + net of all transactions up to end of selected month
-        # (simplified; dashboard focus)
-        all_tx_qs = Transaction.objects.filter(account__user=user, date__lte=last_day)
-        total_income_all = all_tx_qs.filter(kind='income').aggregate(total=Sum('amount'))['total'] or 0
-        total_expense_all = all_tx_qs.filter(kind='expense').aggregate(total=Sum('amount'))['total'] or 0
-        opening_total = accounts.aggregate(total=Sum('opening_balance'))['total'] or 0
-        balance = opening_total + (total_income_all - total_expense_all)
-
-        recent = month_qs.order_by('-date', '-id')[:10]
+        # Compute via projection for the month
+        daily = compute_projection(user, first_day, months=1)
+        start_str = first_day.strftime('%Y-%m-%d')
+        end_str = last_day.strftime('%Y-%m-%d')
+        month_days = [d for d in daily if start_str <= d['date'] <= end_str]
+        income = sum(float(d.get('entrada') or 0) for d in month_days)
+        expense = sum((float(d.get('saida') or 0) + float(d.get('diario') or 0)) for d in month_days)
+        balance = float(month_days[-1]['saldo']) if month_days else 0.0
         ctx.update({
             'accounts': accounts,
             'income_total': income,
             'expense_total': expense,
             'balance': balance,
-            'recent_transactions': recent,
             'selected_month': sel_month,
             'selected_year': sel_year,
             'first_day': first_day,

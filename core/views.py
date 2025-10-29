@@ -35,29 +35,28 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         first_day = date(sel_year, sel_month, 1)
         last_day = date(sel_year, sel_month, calendar.monthrange(sel_year, sel_month)[1])
-        prev_year = sel_year
-        prev_month = sel_month - 1
-        if prev_month == 0:
-            prev_month = 12
-            prev_year -= 1
-        prev_first_day = date(prev_year, prev_month, 1)
-        prev_last_day = date(prev_year, prev_month, calendar.monthrange(prev_year, prev_month)[1])
-        prev_year = sel_year
-        prev_month = sel_month - 1
-        if prev_month == 0:
-            prev_month = 12
-            prev_year -= 1
-        prev_first_day = date(prev_year, prev_month, 1)
+        # Carry-over base: from start of year (or previous year if Jan)
+        if sel_month > 1:
+            base_start = date(sel_year, 1, 1)
+        else:
+            base_start = date(sel_year - 1, 1, 1)
+        months_span = (sel_year - base_start.year) * 12 + sel_month
 
         accounts = account_selectors.active_by_user(user)
 
-        # Compute via projection carrying previous month's balance
-        daily = compute_projection(user, prev_first_day, months=2)
+        # Compute projection from base_start to selected month (ensures carry-over)
+        daily = compute_projection(user, base_start, months=months_span)
         start_str = first_day.strftime('%Y-%m-%d')
         end_str = last_day.strftime('%Y-%m-%d')
         month_days = [d for d in daily if start_str <= d['date'] <= end_str]
-        prev_end_str = prev_last_day.strftime('%Y-%m-%d')
-        prev_end_matches = [d for d in daily if d['date'] == prev_end_str]
+        # Previous month end balance for reference
+        if sel_month > 1:
+            co_year, co_month = sel_year, sel_month - 1
+        else:
+            co_year, co_month = sel_year - 1, 12
+        co_last_day = date(co_year, co_month, calendar.monthrange(co_year, co_month)[1])
+        co_last_str = co_last_day.strftime('%Y-%m-%d')
+        prev_end_matches = [d for d in daily if d['date'] == co_last_str]
         prev_end_balance = float(prev_end_matches[-1]['saldo']) if prev_end_matches else 0.0
         income = sum(float(d.get('entrada') or 0) for d in month_days)
         expense = sum((float(d.get('saida') or 0) + float(d.get('diario') or 0)) for d in month_days)
@@ -73,7 +72,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'selected_year': sel_year,
             'first_day': first_day,
             'last_day': last_day,
-            'prev_first_day': prev_first_day,
+            'prev_first_day': base_start,
             'months': list(range(1, 13)),
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })

@@ -35,11 +35,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         first_day = date(sel_year, sel_month, 1)
         last_day = date(sel_year, sel_month, calendar.monthrange(sel_year, sel_month)[1])
+        prev_year = sel_year
+        prev_month = sel_month - 1
+        if prev_month == 0:
+            prev_month = 12
+            prev_year -= 1
+        prev_first_day = date(prev_year, prev_month, 1)
 
         accounts = account_selectors.active_by_user(user)
 
-        # Compute via projection for the month
-        daily = compute_projection(user, first_day, months=1)
+        # Compute via projection carrying previous month's balance
+        daily = compute_projection(user, prev_first_day, months=2)
         start_str = first_day.strftime('%Y-%m-%d')
         end_str = last_day.strftime('%Y-%m-%d')
         month_days = [d for d in daily if start_str <= d['date'] <= end_str]
@@ -55,6 +61,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'selected_year': sel_year,
             'first_day': first_day,
             'last_day': last_day,
+            'prev_first_day': prev_first_day,
             'months': list(range(1, 13)),
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })

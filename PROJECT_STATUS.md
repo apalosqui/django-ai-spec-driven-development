@@ -11,3 +11,4 @@ Registro de mudanÃ§as do projeto (atualizado pelo agente PM). Formato: data, aut
 - 2025-10-29 — agent — Sprint 1 executada: modelos e endpoints DRF criados (planning, cards, transfers/logs/snapshots) e Account estendido. Impacto: CRUDs de domínio disponíveis via /api/.
 - 2025-10-29 — agent — TASKS.md atualizado: Sprint 1 com itens concluídos marcados.
 - 2025-10-29 — agent — Sprint 2: implementado invoice_builder (compute/rebuild) e endpoints; pendente baixa no vencimento e testes.
+- 2025-10-29 — agent — Sprint 3: projection_engine implementado (endpoint /api/projection) e baixa no vencimento aplicada via faturas.

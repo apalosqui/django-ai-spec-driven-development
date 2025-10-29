@@ -5,6 +5,9 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Transaction
 from accounts.models import Account
 from categories.models import Category
+from accounts import selectors as account_selectors
+from categories import selectors as category_selectors
+from . import selectors as tx_selectors
 
 
 class TransactionListView(LoginRequiredMixin, ListView):
@@ -12,28 +15,19 @@ class TransactionListView(LoginRequiredMixin, ListView):
     template_name = 'transactions/list.html'
 
     def get_queryset(self):
-        qs = Transaction.objects.filter(account__user=self.request.user)
-        account = self.request.GET.get('account')
-        category = self.request.GET.get('category')
-        date_from = self.request.GET.get('date_from')
-        date_to = self.request.GET.get('date_to')
-        q = self.request.GET.get('q')
-        if account:
-            qs = qs.filter(account_id=account)
-        if category:
-            qs = qs.filter(category_id=category)
-        if date_from:
-            qs = qs.filter(date__gte=date_from)
-        if date_to:
-            qs = qs.filter(date__lte=date_to)
-        if q:
-            qs = qs.filter(description__icontains=q)
-        return qs
+        filters = tx_selectors.TransactionFilters(
+            account_id=self._to_int(self.request.GET.get('account')),
+            category_id=self._to_int(self.request.GET.get('category')),
+            date_from=self.request.GET.get('date_from') or None,
+            date_to=self.request.GET.get('date_to') or None,
+            query=self.request.GET.get('q') or None,
+        )
+        return tx_selectors.for_user(self.request.user, filters)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['accounts'] = Account.objects.filter(user=self.request.user)
-        ctx['categories'] = Category.objects.filter(user=self.request.user)
+        ctx['accounts'] = account_selectors.by_user(self.request.user)
+        ctx['categories'] = category_selectors.by_user(self.request.user)
         return ctx
 
 
@@ -45,9 +39,16 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
 
     def get_form(self, *args, **kwargs):
         form = super().get_form(*args, **kwargs)
-        form.fields['account'].queryset = Account.objects.filter(user=self.request.user)
-        form.fields['category'].queryset = Category.objects.filter(user=self.request.user)
+        form.fields['account'].queryset = account_selectors.by_user(self.request.user)
+        form.fields['category'].queryset = category_selectors.by_user(self.request.user)
         return form
+
+    @staticmethod
+    def _to_int(value):
+        try:
+            return int(value) if value not in (None, '') else None
+        except (TypeError, ValueError):
+            return None
 
 
 class TransactionUpdateView(TransactionCreateView, UpdateView):

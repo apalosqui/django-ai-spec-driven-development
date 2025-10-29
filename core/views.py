@@ -1,9 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum, Case, When, F
+from django.db.models import Sum
 from django.views.generic import TemplateView
 
-from accounts.models import Account
-from transactions.models import Transaction
+from accounts import selectors as account_selectors
+from transactions import selectors as tx_selectors
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -12,14 +12,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
-        accounts = Account.objects.filter(user=user, archived=False)
-        tx = Transaction.objects.filter(account__user=user)
-        income = tx.filter(kind='income').aggregate(total=Sum('amount'))['total'] or 0
-        expense = tx.filter(kind='expense').aggregate(total=Sum('amount'))['total'] or 0
+        accounts = account_selectors.active_by_user(user)
+        income, expense = tx_selectors.totals_for_user(user)
         balance_tx = income - expense
         opening_total = accounts.aggregate(total=Sum('opening_balance'))['total'] or 0
         balance = opening_total + balance_tx
-        recent = tx.order_by('-date', '-id')[:10]
+        recent = tx_selectors.recent_for_user(user, limit=10)
         ctx.update({
             'accounts': accounts,
             'income_total': income,
@@ -28,4 +26,3 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'recent_transactions': recent,
         })
         return ctx
-

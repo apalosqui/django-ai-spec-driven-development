@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from .models import Account
+from . import selectors as account_selectors
 
 
 class AccountListView(LoginRequiredMixin, ListView):
@@ -10,7 +11,7 @@ class AccountListView(LoginRequiredMixin, ListView):
     template_name = 'accounts/list.html'
 
     def get_queryset(self):
-        return Account.objects.filter(user=self.request.user, archived=False)
+        return account_selectors.active_by_user(self.request.user)
 
 
 class AccountCreateView(LoginRequiredMixin, CreateView):
@@ -31,7 +32,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('account_list')
 
     def get_queryset(self):
-        return Account.objects.filter(user=self.request.user)
+        return account_selectors.by_user(self.request.user)
 
 
 class AccountDeleteView(LoginRequiredMixin, DeleteView):
@@ -40,4 +41,4 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('account_list')
 
     def get_queryset(self):
-        return Account.objects.filter(user=self.request.user)
+        return account_selectors.by_user(self.request.user)

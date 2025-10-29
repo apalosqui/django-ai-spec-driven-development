@@ -50,5 +50,5 @@ ObservaÃ§Ã£o: este arquivo consolida o plano de sprints (antes em `docs/spri
 - Aceite: visual consistente e informativo para prÃ³ximos 30 dias
 
 ## Ajustes pendentes
-- [ ] Projeção (MVP): garantir carry-over exibido na tabela do mês (saldo no dia 01 deve herdar saldo do último dia do mês anterior; onboarding = zero).
+- [x] Projeção (MVP): garantir carry-over exibido na tabela do mês (saldo no dia 01 deve herdar saldo do último dia do mês anterior; onboarding = zero).
 

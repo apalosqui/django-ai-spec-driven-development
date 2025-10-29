@@ -46,7 +46,7 @@
               <th class="px-3 py-2 text-right">Entrada</th>
               <th class="px-3 py-2 text-right">Saída</th>
               <th class="px-3 py-2 text-right">Diário</th>
-              <th class="px-3 py-2 text-right">Performance</th>
+              <th class="px-3 py-2 text-right">Saldo</th>
             </tr>
           </thead>
           <tbody id="projBody"></tbody>
@@ -70,12 +70,31 @@
           const first = new Date('{{ first_day|date:"Y-m-d" }}');
           const last = new Date('{{ last_day|date:"Y-m-d" }}');
           const inMonth = data.filter(d => { const dt = new Date(d.date); return dt >= first && dt <= last; });
-          const rows = inMonth.map(d => `
+
+          // Carry-over: saldo do último dia do mês anterior
+          const prev = new Date(first);
+          prev.setDate(prev.getDate() - 1);
+          const prevISO = prev.toISOString().slice(0,10);
+          const prevRow = data.find(d => d.date === prevISO);
+          const carry = prevRow ? Number(prevRow.saldo) : 0;
+
+          let rows = '';
+          // Exibir linha de carry-over sempre que houver dado anterior (ou zero explícito no onboarding)
+          rows += `
+            <tr class=\"border-t border-slate-800 bg-slate-900/40\">\
+              <td class=\"px-3 py-2\"><span class=\"text-slate-300\">Saldo anterior</span></td>\
+              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
+              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
+              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
+              <td class=\"px-3 py-2 text-right font-medium\">R$ ${carry.toFixed(2)}</td>\
+            </tr>`;
+
+          rows += inMonth.map(d => `
             <tr class=\"border-t border-slate-800\">\
               <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.saida).toFixed(2)}</td>\
-              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.Diário).toFixed(2)}</td>\
+              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right font-medium\">R$ ${Number(d.saldo).toFixed(2)}</td>\
             </tr>`).join('');
           body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o período.</td></tr>';

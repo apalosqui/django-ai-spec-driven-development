@@ -1,33 +1,49 @@
-## Lista de tarefas (Sprints)
+# TASKS — Sprints & Backlog Breakdown
 
-### Sprint 1 — Fundações e Auth
-- [X] Criar projeto e apps (`core`, `users`, `profiles`, `accounts`, `categories`, `transactions`).
-- [X] Configurar templates, static e Tailwind CDN no `base.html`.
-- [X] Custom User por e-mail e login via e-mail.
-- [X] Signals: auto-criar `Profile` após usuário.
-- [X] Landing pública + rotas de cadastro/login/logout.
+Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-plan.md`) em tarefas acionáveis.
 
-### Sprint 2 — Modelos e CRUDs
-- [X] Modelos com `created_at`/`updated_at` em todas as tabelas.
-- [X] CRUD `Account` (List/Create/Update/Delete) com CBVs.
-- [X] CRUD `Category` com tipo receita/depesa.
-- [X] CRUD `Transaction` com filtro por período/conta/categoria.
-- [X] Dashboard com saldo, totals e últimas transações.
+## Sprint 1 (1–2 semanas)
+- [ ] Models: `Account`, `SalaryRule`, `FixedExpense`, `VariableBudget`, `CreditCard`, `CardTransaction`, `Transfer`, `CardInvoice`, `ProjectionSnapshot`, `TransactionLog`
+- [ ] Migrações criadas e aplicadas
+- [ ] DRF: Serializers + ViewSets para todos os modelos acima (CRUD)
+- [ ] Permissions por owner em todos os endpoints
+- [ ] URLs/routers conectados sob `/api/`
+- [ ] Admin básico registrado para os modelos
+- [ ] Docs atualizadas (README rotas + PRD/API)
+- Aceite: endpoints GET/POST/PUT/DELETE funcionam isolando dados por usuário
 
-### Sprint 3 — UX e Polimento
-- [ ] Aplicar design system unificado (navbar, cards, botões, formulários).
-- [ ] Mensagens de feedback (success/erro) e estados vazios.
-- [ ] Acessibilidade básica (foco/contraste) e responsividade.
+## Sprint 2 (1–2 semanas)
+- [ ] Service `invoice_builder`: fechamento por (cartão, yyyy_mm) com base em `dia_fechamento`
+- [ ] Cálculo e persistência de `CardInvoice.total_calculado`
+- [ ] Baixa no vencimento: debitar conta de pagamento em `data_vencimento`
+- [ ] Endpoints: GET `/api/card-invoices/?yyyy_mm=&card_id=`, POST `/api/card-invoices/rebuild`
+- [ ] Testes básicos do fluxo de fatura (feliz + borda)
+- [ ] Docs atualizadas (seção faturas)
+- Aceite: faturas geradas corretamente e baixa aplicada na data correta
 
-### Sprint 4 — Perfil do Usuário
-- [X] Página de perfil (visualizar e editar).
-- [X] Criar CBVs: `ProfileDetailView` e `ProfileUpdateView`.
-- [X] Formulário de perfil (campo: nome completo).
-- [X] URLs do app `profiles` (`profiles/urls.py`).
-- [X] Templates: `profiles/detail.html` e `profiles/form.html`.
-- [X] Proteger acesso (LoginRequired; apenas o próprio usuário).
-- [X] Link para perfil na navbar e no dashboard.
-- [X] Mensagem de sucesso após salvar.
-- [X] Incluir rotas de `profiles` em `core/urls.py`.
+## Sprint 3 (2 semanas)
+- [ ] Service `projection_engine`: projeção diária 24+ meses (configurável)
+- [ ] Cache mensal (`ProjectionSnapshot`) e invalidação incremental
+- [ ] Endpoint GET `/api/projection/?start=YYYY-MM-DD&months=24`
+- [ ] Considerar: salários, fixos, variável/dia, faturas, transferências; timezone `America/Sao_Paulo`
+- [ ] Performance aceitável em dados de exemplo; memoization onde útil
+- [ ] Docs/algoritmo atualizados
+- Aceite: série diária coerente e com eventos do dia
 
-- [X] Sprint concluída
+## Sprint 4 (1–2 semanas)
+- [ ] Importador XLSX (openpyxl) e CSV: parsing + validações
+- [ ] Wizard de mapeamento (planilha → modelos) e preview
+- [ ] Importar amostras da planilha-base com logs de erros/avisos
+- [ ] Export template CSV
+- [ ] Endpoints: POST `/api/import`, GET `/api/export.csv`
+- [ ] Docs (guia de importação) e exemplos
+- Aceite: importar lotes válidos com feedback claro
+
+## Sprint 5 (1–2 semanas)
+- [ ] UI calendário/timeline com ícones (salário, fixo, variável, fatura, aplicação/resgate)
+- [ ] Tabela diária compatível com planilha: Data, Entrada, Saída, Diário, Saldo
+- [ ] Indicadores de risco (saldo futuro negativo)
+- [ ] Alinhamento com design system; acessibilidade básica
+- [ ] Docs (prints e instruções)
+- Aceite: visual consistente e informativo para próximos 30 dias
+

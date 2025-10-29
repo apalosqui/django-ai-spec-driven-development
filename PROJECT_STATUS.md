@@ -7,3 +7,4 @@ Registro de mudanças do projeto (atualizado pelo agente PM). Formato: data, aut
 - 2025-10-29 — agent — Refatoração para selectors (accounts/categories/transactions) e dashboard via selectors. Impacto: coesão/testabilidade.
 - 2025-10-29 — agent — Adicionados agentes Projection Engine, Import Mapper e Project Manager; roadmap/backlog/sprint plan criados. Impacto: planejamento operacionalizado.
 
+- 2025-10-29 � agent � Sprint plan movido de docs/sprint-plan.md para TASKS.md. Impacto: centraliza��o das tarefas.

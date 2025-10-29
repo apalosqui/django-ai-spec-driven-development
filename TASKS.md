@@ -2,14 +2,13 @@
 
 Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-plan.md`) em tarefas acionáveis.
 
-## Sprint 1 (1–2 semanas)
-- [ ] Models: `Account`, `SalaryRule`, `FixedExpense`, `VariableBudget`, `CreditCard`, `CardTransaction`, `Transfer`, `CardInvoice`, `ProjectionSnapshot`, `TransactionLog`
+- [x] Models: `Account`, `SalaryRule`, `FixedExpense`, `VariableBudget`, `CreditCard`, `CardTransaction`, `Transfer`, `CardInvoice`, `ProjectionSnapshot`, `TransactionLog`
 - [ ] Migrações criadas e aplicadas
-- [ ] DRF: Serializers + ViewSets para todos os modelos acima (CRUD)
-- [ ] Permissions por owner em todos os endpoints
-- [ ] URLs/routers conectados sob `/api/`
-- [ ] Admin básico registrado para os modelos
-- [ ] Docs atualizadas (README rotas + PRD/API)
+- [x] DRF: Serializers + ViewSets para todos os modelos acima (CRUD)
+- [x] Permissions por owner em todos os endpoints
+- [x] URLs/routers conectados sob `/api/`
+- [x] Admin básico registrado para os modelos
+- [x] Docs atualizadas (README rotas + PRD/API)
 - Aceite: endpoints GET/POST/PUT/DELETE funcionam isolando dados por usuário
 
 ## Sprint 2 (1–2 semanas)
@@ -46,4 +45,3 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - [ ] Alinhamento com design system; acessibilidade básica
 - [ ] Docs (prints e instruções)
 - Aceite: visual consistente e informativo para próximos 30 dias
-

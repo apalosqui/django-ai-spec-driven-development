@@ -8,3 +8,5 @@ Registro de mudanÃ§as do projeto (atualizado pelo agente PM). Formato: data, aut
 - 2025-10-29 â€” agent â€” Adicionados agentes Projection Engine, Import Mapper e Project Manager; roadmap/backlog/sprint plan criados. Impacto: planejamento operacionalizado.
 
 - 2025-10-29 — agent — Sprint plan movido de docs/sprint-plan.md para TASKS.md. Impacto: centralização das tarefas.
+- 2025-10-29 — agent — Sprint 1 executada: modelos e endpoints DRF criados (planning, cards, transfers/logs/snapshots) e Account estendido. Impacto: CRUDs de domínio disponíveis via /api/.
+- 2025-10-29 — agent — TASKS.md atualizado: Sprint 1 com itens concluídos marcados.

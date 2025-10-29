@@ -33,7 +33,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if sel_year <= 0:
             sel_year = today.year
 
-                first_day = date(sel_year, sel_month, 1)
+        first_day = date(sel_year, sel_month, 1)
         last_day = date(sel_year, sel_month, calendar.monthrange(sel_year, sel_month)[1])
         # Previous month first day (for table carry-over fetch)
         p_year, p_month = sel_year, sel_month - 1
@@ -64,6 +64,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         prev_end_balance = float(prev_end_matches[-1]['saldo']) if prev_end_matches else 0.0
         income = sum(float(d.get('entrada') or 0) for d in month_days)
         expense = sum((float(d.get('saida') or 0) + float(d.get('diario') or 0)) for d in month_days)
+        performance = income - expense
         balance = float(month_days[-1]['saldo']) if month_days else 0.0
         ctx.update({
             'base_start': base_start,
@@ -71,12 +72,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'accounts': accounts,
             'income_total': income,
             'expense_total': expense,
+            'performance_total': performance,
             'balance': balance,
             'selected_month': sel_month,
             'selected_year': sel_year,
             'first_day': first_day,
             'last_day': last_day,
-            'prev_first_day': base_start,
+            'prev_first_day': prev_first_day,
             'months': list(range(1, 13)),
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })

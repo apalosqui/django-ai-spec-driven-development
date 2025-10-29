@@ -1,9 +1,9 @@
 ﻿{% extends 'base.html' %}
-{% block title %}Finanpy â€” ProjeÃ§Ã£o financeira pessoal{% endblock %}
+{% block title %}Finanpy - Projeção financeira pessoal{% endblock %}
 {% block content %}
   <section class="text-center py-12">
-    <h1 class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-sky-400">ProjeÃ§Ã£o diÃ¡ria do seu saldo por atÃ© 24 meses</h1>
-    <p class="mt-3 text-slate-300">Centralize <strong>Caixa</strong>, <strong>Economias</strong>, <strong>SalÃ¡rios</strong>, <strong>Gastos Fixos/VariÃ¡veis</strong> e <strong>CartÃµes</strong>. Veja o impacto futuro de cada gasto.</p>
+    <h1 class="text-3xl md:text-4xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-sky-400">Projeção diária do seu saldo por até 24 meses</h1>
+    <p class="mt-3 text-slate-300">Centralize <strong>Caixa</strong>, <strong>Economias</strong>, <strong>Salários</strong>, <strong>Gastos Fixos/Variáveis</strong> e <strong>Cartões</strong>. Veja o impacto futuro de cada gasto.</p>
     <div class="mt-6 flex items-center justify-center gap-3">
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}" class="inline-flex items-center px-5 py-2.5 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ir para o painel</a>

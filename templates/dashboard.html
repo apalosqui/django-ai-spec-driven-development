@@ -1,20 +1,27 @@
-﻿{% extends 'base.html' %}
-{% block title %}Dashboard â€” Finanpy{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Dashboard — Finanpy{% endblock %}
 {% block content %}
   <form method="get" class="mb-4 flex items-center gap-2">
     <label class="text-sm text-slate-300">Mês</label>
     <select name="month" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
-      {% for m in '01,02,03,04,05,06,07,08,09,10,11,12'.split(',') %}
-        <option value="{{ forloop.counter }}" {% if forloop.counter == selected_month %}selected{% endif %}>{{ m }}</option>
+      {% for m in months %}
+        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
       {% endfor %}
     </select>
     <label class="text-sm text-slate-300">Ano</label>
-    <input type="number" name="year" value="{{ selected_year }}" class="w-24 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
+    <select name="year" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+      {% for y in years %}
+        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
     <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Aplicar</button>
-  </form><div class="flex items-center justify-between mb-6">
+  </form>
+
+  <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-semibold">Dashboard</h1>
     <a href="{% url 'profiles:detail' %}" class="text-sky-400 hover:underline">Meu perfil</a>
   </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
       <div class="text-slate-400 text-sm">Receitas</div>
@@ -30,20 +37,20 @@
     </div>
   </div>
 
-  <h2 class="text-xl font-semibold mb-3">Ãšltimas transaÃ§Ãµes</h2>
+  <h2 class="text-xl font-semibold mb-3">Últimas transações</h2>
   <div class="space-y-2">
     {% for obj in recent_transactions %}
       <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <div class="text-sm text-slate-400">{{ obj.date }} Â· {{ obj.account.name }} Â· {{ obj.category.name }}</div>
-          <div class="font-medium">{{ obj.description|default:'(sem descriÃ§Ã£o)' }}</div>
+          <div class="text-sm text-slate-400">{{ obj.date }} · {{ obj.account.name }} · {{ obj.category.name }}</div>
+          <div class="font-medium">{{ obj.description|default:'(sem descrição)' }}</div>
         </div>
         <div class="font-semibold {% if obj.kind == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
           {% if obj.kind == 'income' %}+{% else %}-{% endif %} R$ {{ obj.amount }}
         </div>
       </div>
     {% empty %}
-      <p class="text-slate-400">Ainda nÃ£o hÃ¡ transaÃ§Ãµes.</p>
+      <p class="text-slate-400">Ainda não há transações.</p>
     {% endfor %}
   </div>
 
@@ -51,13 +58,13 @@
     <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
       <div class="flex items-end justify-between gap-4 mb-4">
         <div>
-          <h2 class="font-semibold">DemonstraÃ§Ã£o de ProjeÃ§Ã£o (MVP)</h2>
-          <p class="text-slate-400 text-sm">FaÃ§a uma chamada ao endpoint e veja os prÃ³ximos dias.</p>
+          <h2 class="font-semibold">Demonstração de Projeção (MVP)</h2>
+          <p class="text-slate-400 text-sm">Faça uma chamada ao endpoint e veja os próximos dias.</p>
         </div>
         <div class="flex items-center gap-2">
           <input id="start" type="date" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
           <input id="months" type="number" min="1" max="24" value="1" class="w-24 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
-          <button id="btnProj" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ver projeÃ§Ã£o</button>
+          <button id="btnProj" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ver projeção</button>
         </div>
       </div>
       <div class="overflow-x-auto">
@@ -66,8 +73,8 @@
             <tr>
               <th class="px-3 py-2 text-left">Data</th>
               <th class="px-3 py-2 text-right">Entrada</th>
-              <th class="px-3 py-2 text-right">SaÃ­da</th>
-              <th class="px-3 py-2 text-right">DiÃ¡rio</th>
+              <th class="px-3 py-2 text-right">Saída</th>
+              <th class="px-3 py-2 text-right">Diário</th>
               <th class="px-3 py-2 text-right">Saldo</th>
             </tr>
           </thead>
@@ -98,7 +105,7 @@
         try {
           const res = await fetch(`/api/projection/?start=${start}&months=${months}`);
           if (!res.ok) {
-            msg.textContent = 'NÃ£o foi possÃ­vel obter a projeÃ§Ã£o.';
+            msg.textContent = 'Não foi possível obter a projeção.';
             return;
           }
           const data = await res.json();
@@ -110,14 +117,12 @@
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>
               <td class=\"px-3 py-2 text-right font-medium\">R$ ${Number(d.saldo).toFixed(2)}</td>
             </tr>`).join('');
-          body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o perÃ­odo.</td></tr>';
+          body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o período.</td></tr>';
         } catch (e) {
-          msg.textContent = 'Erro inesperado ao consultar a projeÃ§Ã£o.';
+          msg.textContent = 'Erro inesperado ao consultar a projeção.';
         }
       });
     })();
   </script>
 {% endblock %}
-
-
 

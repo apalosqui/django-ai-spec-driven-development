@@ -61,5 +61,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'selected_year': sel_year,
             'first_day': first_day,
             'last_day': last_day,
+            'months': list(range(1, 13)),
+            'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx

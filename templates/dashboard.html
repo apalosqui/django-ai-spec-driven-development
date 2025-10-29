@@ -1,4 +1,57 @@
-﻿</section>
+﻿{% extends 'base.html' %}
+{% block title %}Dashboard — Finanpy{% endblock %}
+{% block content %}
+  <form method="get" class="mb-4 flex items-center gap-2">
+    <label class="text-sm text-slate-300">Mês</label>
+    <select name="month" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+      {% for m in months %}
+        <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
+      {% endfor %}
+    </select>
+    <label class="text-sm text-slate-300">Ano</label>
+    <select name="year" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+      {% for y in years %}
+        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Aplicar</button>
+  </form>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Receitas</div>
+      <div class="text-2xl font-semibold text-emerald-400">R$ {{ income_total }}</div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Despesas</div>
+      <div class="text-2xl font-semibold text-rose-400">R$ {{ expense_total }}</div>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+      <div class="text-slate-400 text-sm">Saldo</div>
+      <div class="text-2xl font-semibold">R$ {{ balance }}</div>
+    </div>
+  </div>
+
+  <section class="py-8">
+    <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
+      <h2 class="font-semibold mb-4">Demonstração de Projeção (MVP)</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-slate-300">
+            <tr>
+              <th class="px-3 py-2 text-left">Data</th>
+              <th class="px-3 py-2 text-right">Entrada</th>
+              <th class="px-3 py-2 text-right">Saída</th>
+              <th class="px-3 py-2 text-right">Diário</th>
+              <th class="px-3 py-2 text-right">Saldo</th>
+            </tr>
+          </thead>
+          <tbody id="projBody"></tbody>
+        </table>
+      </div>
+      <p id="projMsg" class="text-slate-400 text-sm mt-3"></p>
+    </div>
+  </section>
   <script>
     (function() {
       const body = document.getElementById('projBody');
@@ -27,92 +80,5 @@
       }
       loadProjection();
     })();
-  </script>/div>
-
-  <div class="font-medium">{{ obj.description|default:'(sem descriÃ§Ã£o)' }}</div>
-        </div>
-        <div class="font-semibold {% if obj.kind == 'income' %}text-emerald-400{% else %}text-rose-400{% endif %}">
-          {% if obj.kind == 'income' %}+{% else %}-{% endif %} R$ {{ obj.amount }}
-        </div>
-      </div>
-    {% empty %}
-      <p class="text-slate-400">Ainda nÃ£o hÃ¡ transaÃ§Ãµes.</p>
-    {% endfor %}
-  </div>
-
-  <section class="py-8">
-    <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
-      <div class="flex items-end justify-between gap-4 mb-4">
-        <div>
-          <h2 class="font-semibold">DemonstraÃ§Ã£o de ProjeÃ§Ã£o (MVP)</h2>
-          <p class="text-slate-400 text-sm">FaÃ§a uma chamada ao endpoint e veja os prÃ³ximos dias.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <input id="start" type="date" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
-          <input id="months" type="number" min="1" max="24" value="1" class="w-24 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" />
-          <button id="btnProj" class="inline-flex items-center px-4 py-2 rounded-md bg-gradient-to-r from-indigo-500 to-sky-500 text-white hover:opacity-90">Ver projeÃ§Ã£o</button>
-        </div>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead class="text-slate-300">
-            <tr>
-              <th class="px-3 py-2 text-left">Data</th>
-              <th class="px-3 py-2 text-right">Entrada</th>
-              <th class="px-3 py-2 text-right">SaÃ­da</th>
-              <th class="px-3 py-2 text-right">DiÃ¡rio</th>
-              <th class="px-3 py-2 text-right">Saldo</th>
-            </tr>
-          </thead>
-          <tbody id="projBody"></tbody>
-        </table>
-      </div>
-      <p id="projMsg" class="text-slate-400 text-sm mt-3"></p>
-    </div>
-  </section>
-  <script>
-    (function() {
-      const startEl = document.getElementById('start');
-      const monthsEl = document.getElementById('months');
-      const btn = document.getElementById('btnProj');
-      const body = document.getElementById('projBody');
-      const msg = document.getElementById('projMsg');
-      if (!btn) return;
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      if (startEl) startEl.value = `${yyyy}-${mm}-${dd}`;
-      btn.addEventListener('click', async () => {
-        body.innerHTML = '';
-        msg.textContent = '';
-        const start = startEl.value;
-        const months = monthsEl.value || '1';
-        try {
-          const res = await fetch(`/api/projection/?start=${start}&months=${months}`);
-          if (!res.ok) {
-            msg.textContent = 'NÃ£o foi possÃ­vel obter a projeÃ§Ã£o.';
-            return;
-          }
-          const data = await res.json();
-          const rows = data.slice(0, 14).map(d => `
-            <tr class=\"border-t border-slate-800\">
-              <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>
-              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>
-              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.saida).toFixed(2)}</td>
-              <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>
-              <td class=\"px-3 py-2 text-right font-medium\">R$ ${Number(d.saldo).toFixed(2)}</td>
-            </tr>`).join('');
-          body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o perÃ­odo.</td></tr>';
-        } catch (e) {
-          msg.textContent = 'Erro inesperado ao consultar a projeÃ§Ã£o.';
-        }
-      });
-    })();
   </script>
 {% endblock %}
-
-
-
-
-

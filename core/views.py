@@ -1,4 +1,4 @@
-from datetime import date
+﻿from datetime import date
 import calendar
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -41,6 +41,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             prev_month = 12
             prev_year -= 1
         prev_first_day = date(prev_year, prev_month, 1)
+        prev_last_day = date(prev_year, prev_month, calendar.monthrange(prev_year, prev_month)[1])
+        prev_year = sel_year
+        prev_month = sel_month - 1
+        if prev_month == 0:
+            prev_month = 12
+            prev_year -= 1
+        prev_first_day = date(prev_year, prev_month, 1)
 
         accounts = account_selectors.active_by_user(user)
 
@@ -49,6 +56,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         start_str = first_day.strftime('%Y-%m-%d')
         end_str = last_day.strftime('%Y-%m-%d')
         month_days = [d for d in daily if start_str <= d['date'] <= end_str]
+        prev_end_str = prev_last_day.strftime('%Y-%m-%d')
+        prev_end_matches = [d for d in daily if d['date'] == prev_end_str]
+        prev_end_balance = float(prev_end_matches[-1]['saldo']) if prev_end_matches else 0.0
         income = sum(float(d.get('entrada') or 0) for d in month_days)
         expense = sum((float(d.get('saida') or 0) + float(d.get('diario') or 0)) for d in month_days)
         balance = float(month_days[-1]['saldo']) if month_days else 0.0
@@ -66,3 +76,4 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx
+

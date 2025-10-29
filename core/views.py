@@ -63,6 +63,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         expense = sum((float(d.get('saida') or 0) + float(d.get('diario') or 0)) for d in month_days)
         balance = float(month_days[-1]['saldo']) if month_days else 0.0
         ctx.update({
+            'base_start': base_start,
+            'span_months': months_span,
             'accounts': accounts,
             'income_total': income,
             'expense_total': expense,
@@ -76,4 +78,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx
+
 

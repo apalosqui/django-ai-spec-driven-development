@@ -64,9 +64,9 @@
       async function loadProjection() {
         body.innerHTML = '';
         msg.textContent = '';
-        const start = '{{ prev_first_day|date:"Y-m-d" }}';
+        const start = '{{ base_start|date:"Y-m-d" }}';
         try {
-          const res = await fetch(`/api/projection/?start=${start}&months=2`);
+          const res = await fetch(`/api/projection/?start=${start}&months={{ span_months }}`);
           if (!res.ok) { msg.textContent = 'Não foi possível obter a projeção.'; return; }
           const data = await res.json();
           const first = new Date('{{ first_day|date:"Y-m-d" }}');
@@ -87,5 +87,6 @@
     })();
   </script>
 {% endblock %}
+
 
 

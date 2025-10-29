@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
-from .forms import SignupForm
+from .forms import SignupForm, LoginForm
 
 
 class SignupView(CreateView):
@@ -21,6 +21,8 @@ class SignupView(CreateView):
 
 class EmailLoginView(LoginView):
     template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+    authentication_form = LoginForm
 
 
 class EmailLogoutView(LogoutView):

@@ -13,3 +13,4 @@ Registro de mudanÃ§as do projeto (atualizado pelo agente PM). Formato: data, aut
 - 2025-10-29 — agent — Sprint 2: implementado invoice_builder (compute/rebuild) e endpoints; pendente baixa no vencimento e testes.
 - 2025-10-29 — agent — Sprint 3: projection_engine implementado (endpoint /api/projection) e baixa no vencimento aplicada via faturas.
 - 2025-10-29 — agent — Sprint 4 replanejada: landing/home atualizada para MVP com demo de projeção; export CSV movido para Sprint 5.
+- 2025-10-29 — agent — Fluxo de autenticação revisado: auto login no signup, templates de login/signup corrigidos para UTF-8 e labels pt-BR; LOGIN_REDIRECT para dashboard.

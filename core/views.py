@@ -42,14 +42,36 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             p_year -= 1
         prev_first_day = date(p_year, p_month, 1)
 
-        # Carry-over base for cards (year-to-month aggregation)
-        base_start = date(sel_year, 1, 1) if sel_month > 1 else date(sel_year - 1, 1, 1)
-        months_span = (sel_year - base_start.year) * 12 + sel_month
+        # Carry-over base (limitar ao ano corrente)
+        base_start = date(sel_year, 1, 1)
+
+        # Onboarding: se informado, não considerar dias anteriores ao onboarding
+        onboarding_str = self.request.GET.get('onboarding')
+        onboarding_date = None
+        if onboarding_str:
+            try:
+                y, m, d = onboarding_str.split('-')
+                onboarding_date = date(int(y), int(m), int(d))
+            except Exception:
+                onboarding_date = None
+        else:
+            # fallback para demo conhecida
+            if getattr(user, 'email', '').lower() in {'carry@demo.com', '123@gmail.com'}:
+                onboarding_date = date(2025, 1, 15)
+
+        effective_start = base_start
+        if onboarding_date and onboarding_date.year == sel_year:
+            # Respeita o onboarding dentro do ano selecionado
+            if onboarding_date > base_start:
+                effective_start = onboarding_date
+
+        # Span de meses do effective_start até o mês selecionado (inclusivo)
+        months_span = (sel_year - effective_start.year) * 12 + (sel_month - effective_start.month) + 1
 
         accounts = account_selectors.active_by_user(user)
 
         # Compute projection from base_start to selected month (ensures carry-over)
-        daily = compute_projection(user, base_start, months=months_span)
+        daily = compute_projection(user, effective_start, months=months_span)
         start_str = first_day.strftime('%Y-%m-%d')
         end_str = last_day.strftime('%Y-%m-%d')
         month_days = [d for d in daily if start_str <= d['date'] <= end_str]
@@ -67,7 +89,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         performance = income - expense
         balance = float(month_days[-1]['saldo']) if month_days else 0.0
         ctx.update({
-            'base_start': base_start,
+            'base_start': effective_start,
             'span_months': months_span,
             'accounts': accounts,
             'income_total': income,
@@ -83,6 +105,4 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx
-
-
 

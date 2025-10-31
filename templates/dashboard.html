@@ -62,34 +62,15 @@
       async function loadProjection() {
         body.innerHTML = '';
         msg.textContent = '';
-        const start = '{{ prev_first_day|date:"Y-m-d" }}';
+        const start = '{{ base_start|date:"Y-m-d" }}';
         try {
-          const res = await fetch(`/api/projection/?start=${start}&months=2`);
+          const res = await fetch(`/api/projection/?start=${start}&months={{ span_months }}`);
           if (!res.ok) { msg.textContent = 'Não foi possível obter a projeção.'; return; }
           const data = await res.json();
           const first = new Date('{{ first_day|date:"Y-m-d" }}');
           const last = new Date('{{ last_day|date:"Y-m-d" }}');
           const inMonth = data.filter(d => { const dt = new Date(d.date); return dt >= first && dt <= last; });
-
-          // Carry-over: saldo do último dia do mês anterior
-          const prev = new Date(first);
-          prev.setDate(prev.getDate() - 1);
-          const prevISO = prev.toISOString().slice(0,10);
-          const prevRow = data.find(d => d.date === prevISO);
-          const carry = prevRow ? Number(prevRow.saldo) : 0;
-
-          let rows = '';
-          // Exibir linha de carry-over sempre que houver dado anterior (ou zero explícito no onboarding)
-          rows += `
-            <tr class=\"border-t border-slate-800 bg-slate-900/40\">\
-              <td class=\"px-3 py-2\"><span class=\"text-slate-300\">Saldo anterior</span></td>\
-              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
-              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
-              <td class=\"px-3 py-2 text-right\">R$ 0.00</td>\
-              <td class=\"px-3 py-2 text-right font-medium\">R$ ${carry.toFixed(2)}</td>\
-            </tr>`;
-
-          rows += inMonth.map(d => `
+          const rows = inMonth.map(d => `
             <tr class=\"border-t border-slate-800\">\
               <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>\
@@ -104,7 +85,5 @@
     })();
   </script>
 {% endblock %}
-
-
 
 

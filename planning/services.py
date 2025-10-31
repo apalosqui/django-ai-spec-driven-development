@@ -52,17 +52,18 @@ def _daterange(start: date, end: date) -> Iterable[date]:
 
 @transaction.atomic
 def compute_projection(user, start: date, months: int = 24) -> List[Dict]:
-    # Horizon end date
-    y = start.year
-    m = start.month + months
-    y += (m - 1) // 12
-    m = (m - 1) % 12 + 1
+    # Horizon end date: include full months.
+    # Example: start=2025-09-01, months=2 -> cover 2025-09-01 .. 2025-10-31
     from calendar import monthrange
-
-    end = date(y, m, min(start.day, monthrange(y, m)[1]))
+    if months < 1:
+        months = 1
+    idx = (start.month - 1) + (months - 1)
+    end_year = start.year + (idx // 12)
+    end_month = (idx % 12) + 1
+    end_day = monthrange(end_year, end_month)[1]
+    end = date(end_year, end_month, end_day)
 
     # Initial balances (sum of all accounts)
-    opening_total = Account.objects.filter(user=user).aggregate_sum = None
     from django.db.models import Sum
     opening_total = Account.objects.filter(user=user).aggregate(total=Sum('opening_balance'))['total'] or 0
     balance = float(opening_total)

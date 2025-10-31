@@ -42,9 +42,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             p_year -= 1
         prev_first_day = date(p_year, p_month, 1)
 
-        # Carry-over base for cards (year-to-month aggregation)
-        base_start = date(sel_year, 1, 1) if sel_month > 1 else date(sel_year - 1, 1, 1)
-        months_span = (sel_year - base_start.year) * 12 + sel_month
+        # Carry-over base (limitar ao ano corrente para evitar somar meses inexistentes do ano anterior)
+        base_start = date(sel_year, 1, 1)
+        months_span = sel_month
 
         accounts = account_selectors.active_by_user(user)
 
@@ -83,6 +83,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'years': [sel_year - 1, sel_year, sel_year + 1],
         })
         return ctx
-
 
 

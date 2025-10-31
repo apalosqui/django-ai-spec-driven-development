@@ -35,3 +35,5 @@ Pendências conhecidas:
 - Validar bordas de janeiro/ano anterior no carry-over com dados reais (onboarding = zero).
 - Revisão final de encoding UTF-8 em todos os templates para eliminar resquícios de mojibake.
 - Testes automatizados mínimos para projeção e dashboard (consistência das somas/limites de mês).
+
+- 2025-10-31 — PM Agent — Sprint 5 executada: endpoint de exportação CSV (`/api/export.csv`) com suporte a `year+month` ou `start+end`, formato de saída UTF-8 com colunas Data (DD-MM-YYYY), Entrada, Saída, Diário, Saldo. Impacto: permite ao cliente extrair relatório mensal diretamente do sistema.

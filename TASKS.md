@@ -39,8 +39,8 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - [x] Aceite: home comunica valor e permite testar projeção (se logado)
 
 ## Sprint 5 (1–2 semanas)
-- [ ] Export template CSV e endpoint GET `/api/export.csv`
-- [ ] Relatório CSV consolidado por período (cliente)
+- [x] Export template CSV e endpoint GET `/api/export.csv`
+- [x] Relatório CSV consolidado por período (cliente)
 - [ ] Docs (guia de exportação) e exemplos
 - Aceite: exporta relatório CSV válido e coerente
 

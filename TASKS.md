@@ -45,10 +45,10 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - Aceite: exporta relatório CSV válido e coerente
 
 ## Sprint 6 (1–2 semanas)
-- [ ] UI calendário/timeline com ícones (salário, fixo, variável, fatura, aplicação/resgate)
-- [ ] Tabela diária compatível com planilha: Data, Entrada, Saída, Diário, Saldo
-- [ ] Indicadores de risco (saldo futuro negativo)
-- [ ] Alinhamento com design system; acessibilidade básica
+- [x] UI calendário/timeline com ícones (salário, fixo, variável, fatura, aplicação/resgate)
+- [x] Tabela diária compatível com planilha: Data, Entrada, Saída, Diário, Saldo
+- [x] Indicadores de risco (saldo futuro negativo)
+- [x] Alinhamento com design system; acessibilidade básica
 - [ ] Docs (prints e instruções)
 - Aceite: visual consistente e informativo para próximos 30 dias
 

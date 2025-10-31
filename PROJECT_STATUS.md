@@ -37,3 +37,4 @@ Pendências conhecidas:
 - Testes automatizados mínimos para projeção e dashboard (consistência das somas/limites de mês).
 
 - 2025-10-31 — PM Agent — Sprint 5 executada: endpoint de exportação CSV (`/api/export.csv`) com suporte a `year+month` ou `start+end`, formato de saída UTF-8 com colunas Data (DD-MM-YYYY), Entrada, Saída, Diário, Saldo. Impacto: permite ao cliente extrair relatório mensal diretamente do sistema.
+ - 2025-10-31 — PM Agent — Sprint 6 executada: adicionada Timeline do mês com ícones (💼 salário, 🧾 fixo, 📊 variável, 💳 fatura, 🔁 transferência), realce de risco (saldo futuro negativo) e acessibilidade básica (rótulos e aria). Tabela diária mantida compatível com a planilha. Impacto: melhor compreensão visual e detecção precoce de risco financeiro.

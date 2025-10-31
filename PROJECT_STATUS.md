@@ -14,6 +14,22 @@ Registro de mudanças do projeto (atualizado pelo agente PM). Formato: data, aut
 - 2025-10-29 — agent — Sprint 4 replanejada: landing/home atualizada para MVP com demo de projeção; export CSV movido para Sprint 5.
 - 2025-10-29 — agent — Fluxo de autenticação revisado: auto login no signup, templates de login/signup em UTF-8 e labels pt-BR; LOGIN_REDIRECT para dashboard.
 - 2025-10-29 — agent — Projeção: carry-over exibido na tabela do MVP (linha "Saldo anterior") e correção de rótulos (coluna "Saldo" e chave diario). Impacto: visão acumulada mês a mês correta.
+ - 2025-10-31 — PM Agent — Sprint 3 executada: horizonte mensal completo; carry-over contínuo; correção de janeiro (sem dezembro inexistente); onboarding respeitado (dias anteriores a D0 sem valores); endpoint de projeção consumido pelo dashboard com base_start/meses corretos. Impacto: MVP consistente mês a mês e pronto para validação de uso real.
+
+Relatório do Project Manager — Sprint 3
+- Objetivo: consolidar a projeção diária com comportamento contínuo entre meses e bordas (janeiro/onboarding) e alinhar o dashboard ao engine.
+- Entregas:
+  - Engine: horizonte por mês completo; eventos considerados (salários, fixos, variável/dia, faturas no vencimento, transferências como eventos sem afetar patrimônio total).
+  - Dashboard: consumo usando base do ano corrente e months span corretos; remoção de dependência de dezembro no mês de janeiro; suporte a `?onboarding=YYYY-MM-DD` (padrão demo 2025-01-15) para não exibir valores antes do D0.
+  - TASKS.md: sprint 3 atualizada; itens marcados como concluídos conforme implementação.
+- Pendências/risco:
+  - Performance/memoization em bases maiores (avaliar cache incremental em ProjectionSnapshot e invalidação por janela).
+  - Documentação do algoritmo (PRD) e casos de borda adicionais; testes automatizados.
+  - Normalização final de encoding residual em templates, se houver.
+- Próximos passos propostos (entrada Sprint 5/6):
+  - Export CSV consolidado por período para cliente.
+  - Endpoint de projeção mensal (server-side) para reduzir payload no dashboard.
+  - UI timeline e indicadores de risco (saldo futuro negativo).
 
 Pendências conhecidas:
 - Validar bordas de janeiro/ano anterior no carry-over com dados reais (onboarding = zero).

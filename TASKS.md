@@ -27,7 +27,7 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - [x] Horizonte por mês completo (fim no último dia do mês alvo)
 - [x] Janeiro: não somar dezembro inexistente (carry-over seguro)
 - [x] Onboarding: dias anteriores ao onboarding sem valores (respeita D0)
-- [ ] Considerar: salários, fixos, variável/dia, faturas, transferências; timezone `America/Sao_Paulo`
+- [x] Considerar: salários, fixos, variável/dia, faturas, transferências; timezone `America/Sao_Paulo`
 - [ ] Performance aceitável em dados de exemplo; memoization onde útil
 - [ ] Docs/algoritmo atualizados
 - Aceite: série diária coerente e com eventos do dia

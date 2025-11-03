@@ -72,14 +72,49 @@
           const first = new Date('{{ first_day|date:"Y-m-d" }}');
           const last = new Date('{{ last_day|date:"Y-m-d" }}');
           const inMonth = data.filter(d => { const dt = new Date(d.date); return dt >= first && dt <= last; });
-          const rows = inMonth.map(d => `
+          // Visual indicator for saldo: gradient from -2000 (red) to +5000 (green)
+          const NEG_LIMIT = -2000;
+          const POS_LIMIT = 5000;
+          const RED = '#f01818';
+          const GREEN = '#18f018';
+          const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+          const hexToRgb = (hex) => {
+            const h = hex.replace('#','');
+            return {
+              r: parseInt(h.substring(0,2),16),
+              g: parseInt(h.substring(2,4),16),
+              b: parseInt(h.substring(4,6),16)
+            };
+          };
+          const rgbToHex = ({r,g,b}) => '#' + [r,g,b].map(v=>{
+            const s = clamp(Math.round(v),0,255).toString(16).padStart(2,'0');
+            return s;
+          }).join('');
+          const lerp = (a,b,t)=> a + (b-a)*t;
+          const mix = (c1,c2,t)=>{
+            const A=hexToRgb(c1), B=hexToRgb(c2);
+            return rgbToHex({r: lerp(A.r,B.r,t), g: lerp(A.g,B.g,t), b: lerp(A.b,B.b,t)});
+          };
+          const colorForSaldo = (v)=>{
+            if (v <= NEG_LIMIT) return RED;
+            if (v >= POS_LIMIT) return GREEN;
+            const t = (v - NEG_LIMIT) / (POS_LIMIT - NEG_LIMIT); // 0..1
+            return mix(RED, GREEN, t);
+          };
+
+          const rows = inMonth.map(d => {
+            const v = Number(d.saldo);
+            const color = colorForSaldo(v);
+            const textColor = '#0a0a0a'; // melhor contraste sobre a faixa colorida
+            return `
             <tr class=\"border-t border-slate-800\">\
               <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.saida).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>\
-              <td class=\"px-3 py-2 text-right font-medium ${Number(d.saldo) < 0 ? 'text-rose-400' : 'text-slate-100'}\">R$ ${Number(d.saldo).toFixed(2)}</td>\
-            </tr>`).join('');
+              <td class=\"px-3 py-2 text-right font-medium\"><span style=\"background:${color}; color:${textColor}; padding:2px 8px; border-radius:6px; display:inline-block; min-width:7ch;\">R$ ${v.toFixed(2)}</span></td>\
+            </tr>`;
+          }).join('');
           body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o período.</td></tr>';
         } catch (e) { msg.textContent = 'Erro inesperado ao consultar a projeção.'; }
       }

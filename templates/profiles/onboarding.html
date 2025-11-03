@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Onboarding — Finanpy{% endblock %}
+{% block content %}
+  <h1 class="text-xl font-semibold mb-4">Configurar seu início (Onboarding)</h1>
+  <form method="post" class="space-y-4 max-w-xl">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="px-4 py-2 rounded-md border border-rose-800 bg-rose-900/20 text-rose-200">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div>
+      <label class="block text-sm text-slate-300">{{ form.onboarding_date.label }}</label>
+      {{ form.onboarding_date.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100','placeholder':'YYYY-MM-DD'}) }}
+      {% if form.onboarding_date.help_text %}<p class="text-xs text-slate-400">{{ form.onboarding_date.help_text }}</p>{% endif %}
+      {{ form.onboarding_date.errors }}
+    </div>
+
+    <div>
+      <label class="block text-sm text-slate-300">{{ form.opening_balance_cash.label }}</label>
+      {{ form.opening_balance_cash.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+      {{ form.opening_balance_cash.errors }}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-slate-300">{{ form.salary_amount.label }}</label>
+        {{ form.salary_amount.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+        {{ form.salary_amount.errors }}
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300">{{ form.salary_days.label }}</label>
+        {{ form.salary_days.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100','placeholder':'5,20'}) }}
+        <p class="text-xs text-slate-400">{{ form.salary_days.help_text }}</p>
+        {{ form.salary_days.errors }}
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      {{ form.ultimo_dia_util }}
+      <label class="text-sm text-slate-300">{{ form.ultimo_dia_util.label }}</label>
+    </div>
+
+    <div>
+      <label class="block text-sm text-slate-300">{{ form.variable_budget.label }}</label>
+      {{ form.variable_budget.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+      {{ form.variable_budget.errors }}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-slate-300">{{ form.reserve_name.label }}</label>
+        {{ form.reserve_name.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100','placeholder':'Reserva de Emergência'}) }}
+        {{ form.reserve_name.errors }}
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300">{{ form.reserve_initial.label }}</label>
+        {{ form.reserve_initial.as_widget(attrs={'class':'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'}) }}
+        {{ form.reserve_initial.errors }}
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Salvar e continuar</button>
+      <a href="{% url 'dashboard' %}" class="inline-flex items-center px-4 py-2 rounded-md border border-slate-700 hover:bg-slate-800">Cancelar</a>
+    </div>
+  </form>
+{% endblock %}
+

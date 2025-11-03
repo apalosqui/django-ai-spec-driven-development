@@ -74,21 +74,19 @@
       <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
         <h2 class="font-semibold mb-3">Despesas fixas (até 10 itens)</h2>
         {{ formset.management_form }}
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm text-slate-300">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 text-sm text-slate-300">
           <div class="md:col-span-2">Nome</div>
           <div>Valor (R$)</div>
           <div>Dia</div>
           <div>Periodicidade</div>
-          <div>Conta</div>
         </div>
         <div class="space-y-3 mt-2">
           {% for f in formset %}
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
               <div class="md:col-span-2">{{ f.name }}</div>
               <div>{{ f.amount }}</div>
               <div>{{ f.due_day }}</div>
               <div>{{ f.periodicity }}</div>
-              <div>{{ f.paying_account }}</div>
               <div class="flex items-center">{{ f.pay_early_business_day }} <span class="ml-2 text-sm text-slate-300">Dia útil anterior</span></div>
             </div>
           {% endfor %}

@@ -49,7 +49,6 @@ class FixedExpenseItemForm(forms.Form):
     due_day = forms.IntegerField(label='Dia de vencimento', required=False, min_value=1, max_value=31)
     periodicity = forms.ChoiceField(label='Periodicidade', choices=PERIODICITY_CHOICES, initial='MENSAL', required=False)
     pay_early_business_day = forms.BooleanField(label='Pagar no dia útil anterior', required=False)
-    paying_account = forms.ChoiceField(label='Conta pagadora', required=False)
 
     def apply_tailwind(self):
         text_cls = 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'

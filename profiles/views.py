@@ -42,7 +42,6 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
         formset = self._fixed_formset()
         for f in formset:
             f.apply_tailwind()
-            f.fields['paying_account'].choices = [(str(a.id), a.name) for a in Account.objects.filter(user=request.user)]
         var_form = VariableAverageForm(prefix='vb')
         return self.render_to_response({'form': form, 'formset': formset, 'var_form': var_form})
 
@@ -54,7 +53,6 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
         var_form = VariableAverageForm(request.POST, prefix='vb')
         for f in formset:
             f.apply_tailwind()
-            f.fields['paying_account'].choices = [(str(a.id), a.name) for a in Account.objects.filter(user=request.user)]
 
         if not (form.is_valid() and formset.is_valid() and var_form.is_valid()):
             return self.render_to_response({'form': form, 'formset': formset, 'var_form': var_form})
@@ -87,7 +85,10 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
         VariableBudget.objects.update_or_create(user=user, category='Gastos Variáveis', defaults={'monthly_amount': vb, 'active': True})
 
         # 5) Fixos
-        accounts = {str(a.id): a for a in Account.objects.filter(user=user)}
+        # Conta unificada (sem seleção pelo usuário)
+        def unified_account():
+            acc, _ = Account.objects.get_or_create(user=user, name='Conta Única', defaults={'opening_balance': 0, 'kind': getattr(Account, 'KIND_CASH', 'CAIXA')})
+            return acc
         for f in formset:
             cd = f.cleaned_data
             if not cd:
@@ -97,8 +98,7 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
             due_day = cd.get('due_day')
             if not name or not amount or not due_day:
                 continue
-            acc_id = cd.get('paying_account')
-            paying_acc = accounts.get(str(acc_id)) or next(iter(accounts.values()), None)
+            paying_acc = unified_account()
             FixedExpense.objects.create(
                 user=user,
                 name=name,
@@ -113,4 +113,3 @@ class OnboardingView(LoginRequiredMixin, TemplateView):
         onboarding_date = form.cleaned_data['onboarding_date']
         from django.shortcuts import redirect
         return redirect(reverse_lazy('dashboard') + f"?month={onboarding_date.month}&year={onboarding_date.year}&onboarding={onboarding_date:%Y-%m-%d}")
-

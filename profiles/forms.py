@@ -38,3 +38,28 @@ class OnboardingForm(forms.Form):
                 self.fields[name].widget.attrs.setdefault('class', text_cls)
         self.fields['onboarding_date'].widget.attrs.setdefault('placeholder', 'YYYY-MM-DD')
         self.fields['salary_days'].widget.attrs.setdefault('placeholder', '5,20')
+
+
+class FixedExpenseItemForm(forms.Form):
+    PERIODICITY_CHOICES = (
+        ('MENSAL', 'Mensal'),
+        ('ANUAL', 'Anual'),
+    )
+    name = forms.CharField(label='Nome', required=False, max_length=150)
+    amount = forms.DecimalField(label='Valor (R$)', required=False, min_value=0, decimal_places=2, max_digits=12)
+    due_day = forms.IntegerField(label='Dia de vencimento', required=False, min_value=1, max_value=31)
+    periodicity = forms.ChoiceField(label='Periodicidade', choices=PERIODICITY_CHOICES, initial='MENSAL', required=False)
+    pay_early_business_day = forms.BooleanField(label='Pagar no dia útil anterior', required=False)
+    paying_account = forms.ChoiceField(label='Conta pagadora', required=False)
+
+    def apply_tailwind(self):
+        text_cls = 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100'
+        for name, field in self.fields.items():
+            if isinstance(field.widget, (forms.TextInput, forms.NumberInput, forms.Select)):
+                field.widget.attrs.setdefault('class', text_cls)
+
+class VariableAverageForm(forms.Form):
+    variable_budget = forms.DecimalField(label='Orçamento variável mensal (R$)', min_value=0, decimal_places=2, max_digits=12, required=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['variable_budget'].widget.attrs.setdefault('class', 'bg-slate-800 border border-slate-700 rounded-md px-3 py-2 w-full text-slate-100')

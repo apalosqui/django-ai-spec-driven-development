@@ -2,65 +2,118 @@
 {% block title %}Onboarding — Finanpy{% endblock %}
 {% block content %}
   <h1 class="text-xl font-semibold mb-4">Configurar seu início (Onboarding)</h1>
-  <form method="post" class="space-y-4 max-w-xl">
+  <div class="mb-4 inline-flex rounded-lg border border-slate-800 overflow-hidden">
+    <button type="button" id="tab1" class="px-4 py-2 bg-slate-800 text-slate-100">Passo 1 — Dados iniciais</button>
+    <button type="button" id="tab2" class="px-4 py-2 bg-slate-900 text-slate-300">Passo 2 — Fixos e variável</button>
+  </div>
+
+  <form method="post" class="space-y-6">
     {% csrf_token %}
     {% if form.non_field_errors %}
       <div class="px-4 py-2 rounded-md border border-rose-800 bg-rose-900/20 text-rose-200">{{ form.non_field_errors }}</div>
     {% endif %}
 
-    <div>
-      <label class="block text-sm text-slate-300">{{ form.onboarding_date.label }}</label>
-      {{ form.onboarding_date }}
-      {% if form.onboarding_date.help_text %}<p class="text-xs text-slate-400">{{ form.onboarding_date.help_text }}</p>{% endif %}
-      {{ form.onboarding_date.errors }}
-    </div>
-
-    <div>
-      <label class="block text-sm text-slate-300">{{ form.opening_balance_cash.label }}</label>
-      {{ form.opening_balance_cash }}
-      {{ form.opening_balance_cash.errors }}
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm text-slate-300">{{ form.salary_amount.label }}</label>
-        {{ form.salary_amount }}
-        {{ form.salary_amount.errors }}
+    <!-- Passo 1 -->
+    <section id="step1" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.onboarding_date.label }}</label>
+          {{ form.onboarding_date }}
+          {{ form.onboarding_date.errors }}
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.opening_balance_cash.label }}</label>
+          {{ form.opening_balance_cash }}
+          {{ form.opening_balance_cash.errors }}
+        </div>
       </div>
-      <div>
-        <label class="block text-sm text-slate-300">{{ form.salary_days.label }}</label>
-        {{ form.salary_days }}
-        <p class="text-xs text-slate-400">{{ form.salary_days.help_text }}</p>
-        {{ form.salary_days.errors }}
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      {{ form.ultimo_dia_util }}
-      <label class="text-sm text-slate-300">{{ form.ultimo_dia_util.label }}</label>
-    </div>
 
-    <div>
-      <label class="block text-sm text-slate-300">{{ form.variable_budget.label }}</label>
-      {{ form.variable_budget }}
-      {{ form.variable_budget.errors }}
-    </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.salary_amount.label }}</label>
+          {{ form.salary_amount }}
+          {{ form.salary_amount.errors }}
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.salary_days.label }}</label>
+          {{ form.salary_days }}
+          <p class="text-xs text-slate-400">{{ form.salary_days.help_text }}</p>
+          {{ form.salary_days.errors }}
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        {{ form.ultimo_dia_util }}
+        <label class="text-sm text-slate-300">{{ form.ultimo_dia_util.label }}</label>
+      </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm text-slate-300">{{ form.reserve_name.label }}</label>
-        {{ form.reserve_name }}
-        {{ form.reserve_name.errors }}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.reserve_name.label }}</label>
+          {{ form.reserve_name }}
+          {{ form.reserve_name.errors }}
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300">{{ form.reserve_initial.label }}</label>
+          {{ form.reserve_initial }}
+          {{ form.reserve_initial.errors }}
+        </div>
       </div>
-      <div>
-        <label class="block text-sm text-slate-300">{{ form.reserve_initial.label }}</label>
-        {{ form.reserve_initial }}
-        {{ form.reserve_initial.errors }}
+    </section>
+
+    <!-- Passo 2 -->
+    <section id="step2" class="space-y-4 hidden">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+        <h2 class="font-semibold mb-3">Orçamento variável mensal</h2>
+        <div class="max-w-sm">
+          {{ var_form.variable_budget.label_tag }}
+          {{ var_form.variable_budget }}
+          {{ var_form.variable_budget.errors }}
+        </div>
       </div>
-    </div>
+
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+        <h2 class="font-semibold mb-3">Despesas fixas (até 10 itens)</h2>
+        {{ formset.management_form }}
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm text-slate-300">
+          <div class="md:col-span-2">Nome</div>
+          <div>Valor (R$)</div>
+          <div>Dia</div>
+          <div>Periodicidade</div>
+          <div>Conta</div>
+        </div>
+        <div class="space-y-3 mt-2">
+          {% for f in formset %}
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+              <div class="md:col-span-2">{{ f.name }}</div>
+              <div>{{ f.amount }}</div>
+              <div>{{ f.due_day }}</div>
+              <div>{{ f.periodicity }}</div>
+              <div>{{ f.paying_account }}</div>
+              <div class="flex items-center">{{ f.pay_early_business_day }} <span class="ml-2 text-sm text-slate-300">Dia útil anterior</span></div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
 
     <div class="flex gap-3">
-      <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Salvar e continuar</button>
+      <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Salvar e concluir</button>
       <a href="{% url 'dashboard' %}" class="inline-flex items-center px-4 py-2 rounded-md border border-slate-700 hover:bg-slate-800">Cancelar</a>
     </div>
   </form>
+
+  <script>
+    (function(){
+      const t1 = document.getElementById('tab1');
+      const t2 = document.getElementById('tab2');
+      const s1 = document.getElementById('step1');
+      const s2 = document.getElementById('step2');
+      function sel(tab){
+        if(tab===1){ t1.className='px-4 py-2 bg-slate-800 text-slate-100'; t2.className='px-4 py-2 bg-slate-900 text-slate-300'; s1.classList.remove('hidden'); s2.classList.add('hidden'); }
+        else { t2.className='px-4 py-2 bg-slate-800 text-slate-100'; t1.className='px-4 py-2 bg-slate-900 text-slate-300'; s2.classList.remove('hidden'); s1.classList.add('hidden'); }
+      }
+      t1.addEventListener('click', ()=>sel(1));
+      t2.addEventListener('click', ()=>sel(2));
+    })();
+  </script>
 {% endblock %}

@@ -20,7 +20,7 @@ from rest_framework.routers import DefaultRouter
 from django.views.generic import TemplateView
 
 from users.views import SignupView, EmailLoginView, EmailLogoutView
-from planning.api import SalaryRuleViewSet, FixedExpenseViewSet, VariableBudgetViewSet, ProjectionView
+from planning.api import SalaryRuleViewSet, FixedExpenseViewSet, VariableBudgetViewSet, ProjectionView, ExportCSVView
 from cards.api import CreditCardViewSet, CardTransactionViewSet, CardInvoiceViewSet
 from transactions.api import TransferViewSet, TransactionLogViewSet, ProjectionSnapshotViewSet
 from accounts.api import AccountViewSet
@@ -61,4 +61,5 @@ router.register(r'projection-snapshots', ProjectionSnapshotViewSet, basename='pr
 urlpatterns += [
     path('api/', include(router.urls)),
     path('api/projection/', ProjectionView.as_view(), name='api-projection'),
+    path('api/export.csv', ExportCSVView.as_view(), name='api-export-csv'),
 ]

@@ -1,20 +1,20 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% block title %}Dashboard — Finanpy{% endblock %}
 {% block content %}
-  <form method="get" class="mb-4 flex items-center gap-2">
-    <label class="text-sm text-slate-300">Mês</label>
-    <select name="month" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+  <form method="get" class="mb-4 flex items-center gap-2" aria-label="Selecionar mês e ano">
+    <label class="text-sm text-slate-300" for="sel-month">Mês</label>
+    <select id="sel-month" name="month" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" aria-label="Selecionar mês">
       {% for m in months %}
         <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
       {% endfor %}
     </select>
-    <label class="text-sm text-slate-300">Ano</label>
-    <select name="year" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100">
+    <label class="text-sm text-slate-300" for="sel-year">Ano</label>
+    <select id="sel-year" name="year" class="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-slate-100" aria-label="Selecionar ano">
       {% for y in years %}
         <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
       {% endfor %}
     </select>
-    <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit">Aplicar</button>
+    <button class="inline-flex items-center px-4 py-2 rounded-md bg-slate-800 border border-slate-700 hover:bg-slate-700" type="submit" aria-label="Aplicar filtro">Aplicar</button>
   </form>
 
   <section class="mb-6">
@@ -22,10 +22,12 @@
       <h2 class="font-semibold mb-4">Resumo financeiro do mês</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-          <div class="text-slate-400 text-sm">Receitas</div><div class="text-2xl font-semibold text-emerald-400">R$ {{ income_total }}</div>
+          <div class="text-slate-400 text-sm">Receitas</div>
+          <div class="text-2xl font-semibold text-emerald-400">R$ {{ income_total }}</div>
         </div>
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-          <div class="text-slate-400 text-sm">Despesas</div><div class="text-2xl font-semibold text-rose-400">R$ {{ expense_total }}</div>
+          <div class="text-slate-400 text-sm">Despesas</div>
+          <div class="text-2xl font-semibold text-rose-400">R$ {{ expense_total }}</div>
         </div>
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
           <div class="text-slate-400 text-sm">Performance</div>
@@ -39,14 +41,14 @@
     <div class="bg-slate-900/60 backdrop-blur border border-slate-800 rounded-xl p-5">
       <h2 class="font-semibold mb-4">Demonstração de Projeção (MVP)</h2>
       <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
+        <table class="min-w-full text-sm table-fixed">
           <thead class="text-slate-300">
             <tr>
-              <th class="px-3 py-2 text-left">Data</th>
-              <th class="px-3 py-2 text-right">Entrada</th>
-              <th class="px-3 py-2 text-right">Saída</th>
-              <th class="px-3 py-2 text-right">Diário</th>
-              <th class="px-3 py-2 text-right">Saldo</th>
+              <th class="px-3 py-2 text-left w-32">Data</th>
+              <th class="px-3 py-2 text-right w-32">Entrada</th>
+              <th class="px-3 py-2 text-right w-32">Saída</th>
+              <th class="px-3 py-2 text-right w-32">Diário</th>
+              <th class="px-3 py-2 text-right w-40">Saldo</th>
             </tr>
           </thead>
           <tbody id="projBody"></tbody>
@@ -70,14 +72,49 @@
           const first = new Date('{{ first_day|date:"Y-m-d" }}');
           const last = new Date('{{ last_day|date:"Y-m-d" }}');
           const inMonth = data.filter(d => { const dt = new Date(d.date); return dt >= first && dt <= last; });
-          const rows = inMonth.map(d => `
+          // Visual indicator for saldo: gradient from -2000 (red) to +5000 (green)
+          const NEG_LIMIT = -2000;
+          const POS_LIMIT = 5000;
+          const RED = '#f01818';
+          const GREEN = '#18f018';
+          const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+          const hexToRgb = (hex) => {
+            const h = hex.replace('#','');
+            return {
+              r: parseInt(h.substring(0,2),16),
+              g: parseInt(h.substring(2,4),16),
+              b: parseInt(h.substring(4,6),16)
+            };
+          };
+          const rgbToHex = ({r,g,b}) => '#' + [r,g,b].map(v=>{
+            const s = clamp(Math.round(v),0,255).toString(16).padStart(2,'0');
+            return s;
+          }).join('');
+          const lerp = (a,b,t)=> a + (b-a)*t;
+          const mix = (c1,c2,t)=>{
+            const A=hexToRgb(c1), B=hexToRgb(c2);
+            return rgbToHex({r: lerp(A.r,B.r,t), g: lerp(A.g,B.g,t), b: lerp(A.b,B.b,t)});
+          };
+          const colorForSaldo = (v)=>{
+            if (v <= NEG_LIMIT) return RED;
+            if (v >= POS_LIMIT) return GREEN;
+            const t = (v - NEG_LIMIT) / (POS_LIMIT - NEG_LIMIT); // 0..1
+            return mix(RED, GREEN, t);
+          };
+
+          const rows = inMonth.map(d => {
+            const v = Number(d.saldo);
+            const color = colorForSaldo(v);
+            const textColor = '#0a0a0a'; // melhor contraste sobre a faixa colorida
+            return `
             <tr class=\"border-t border-slate-800\">\
               <td class=\"px-3 py-2\">${d.date.split('-').reverse().join('-')}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.entrada).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.saida).toFixed(2)}</td>\
               <td class=\"px-3 py-2 text-right\">R$ ${Number(d.diario).toFixed(2)}</td>\
-              <td class=\"px-3 py-2 text-right font-medium\">R$ ${Number(d.saldo).toFixed(2)}</td>\
-            </tr>`).join('');
+              <td class=\"px-3 py-2 text-right font-medium\"><span style=\"background:${color}; color:${textColor}; padding:2px 8px; border-radius:6px; display:inline-block; min-width:7ch;\">R$ ${v.toFixed(2)}</span></td>\
+            </tr>`;
+          }).join('');
           body.innerHTML = rows || '<tr><td class=\"px-3 py-3 text-slate-400\" colspan=\"5\">Sem dados para o período.</td></tr>';
         } catch (e) { msg.textContent = 'Erro inesperado ao consultar a projeção.'; }
       }
@@ -85,5 +122,3 @@
     })();
   </script>
 {% endblock %}
-
-

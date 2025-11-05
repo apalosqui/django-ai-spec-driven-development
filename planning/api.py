@@ -12,6 +12,11 @@ from django.http import HttpResponse
 from datetime import date
 import calendar
 import csv
+from accounts.models import Account
+from categories.models import Category
+from transactions.models import Transaction
+from .models import FixedExpense, SalaryRule, VariableBudget
+from django.utils.dateparse import parse_date
 
 
 class BaseOwnedViewSet(viewsets.ModelViewSet):
@@ -115,3 +120,127 @@ class ExportCSVView(APIView):
             ])
 
         return resp
+
+
+class QuickEventView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        kind = (request.data.get('kind') or '').strip()  # income|expense|monthly_average
+        amount = request.data.get('amount')
+        date_str = request.data.get('date')
+        desc = (request.data.get('description') or '').strip()
+        recurrence = (request.data.get('recurrence') or 'once').strip()  # once|monthly
+        expense_mode = (request.data.get('expense_mode') or 'fixed').strip()  # fixed|daily (aplica para expense)
+        backfill = str(request.data.get('backfill') or 'false').lower() in ('1','true','yes','on')
+        backfill_since = request.data.get('backfill_since')
+
+        if kind not in ('income', 'expense', 'monthly_average'):
+            return Response({'detail': 'kind must be income, expense, or monthly_average'}, status=400)
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                raise ValueError
+        except Exception:
+            return Response({'detail': 'amount must be positive'}, status=400)
+
+        # Unified account + default category
+        acc, _ = Account.objects.get_or_create(user=request.user, name='Conta Única', defaults={'opening_balance': 0, 'kind': getattr(Account, 'KIND_CASH', 'CAIXA')})
+
+        # Monthly Average (Variable Budget - diluído durante o mês)
+        if kind == 'monthly_average':
+            vb, created = VariableBudget.objects.update_or_create(
+                user=request.user,
+                category='Gastos Variáveis',
+                defaults={'monthly_amount': amount, 'active': True}
+            )
+            # Apply backfill if requested
+            if backfill and backfill_since:
+                bf_date = parse_date(backfill_since)
+                if bf_date:
+                    VariableBudget.objects.filter(pk=vb.pk).update(created_at=bf_date)
+            return Response({
+                'status': 'ok',
+                'created': 'variable_budget',
+                'monthly_amount': amount,
+                'note': 'Este valor será diluído diariamente ao longo do mês'
+            }, status=201)
+
+        # Parse date for income/expense (not needed for monthly_average)
+        d = parse_date(date_str)
+        if not d:
+            return Response({'detail': 'invalid date (YYYY-MM-DD)'}, status=400)
+
+        # Determine backfill date
+        bf_date = parse_date(backfill_since) if (backfill and backfill_since) else None
+
+        cat, _ = Category.objects.get_or_create(user=request.user, name='Outros', type=kind if kind != 'monthly_average' else 'expense')
+
+        # Income
+        if kind == 'income':
+            if recurrence == 'monthly':
+                # Create/update salary rule on the same day of month
+                rule, _ = SalaryRule.objects.update_or_create(
+                    user=request.user,
+                    defaults={'amount': amount, 'days': str(d.day), 'ultimo_dia_util': False},
+                )
+                if bf_date:
+                    # move created_at to bf_date to aplicar retroativamente
+                    SalaryRule.objects.filter(pk=rule.pk).update(created_at=bf_date)
+                return Response({'status': 'ok', 'created': 'salary_rule', 'amount': amount, 'day': d.day, 'backfill': backfill}, status=201)
+            else:
+                tx = Transaction.objects.create(account=acc, category=cat, amount=amount, kind='income', date=d, description=desc)
+                return Response({'id': tx.id, 'kind': 'income', 'amount': amount, 'date': d.isoformat()}, status=201)
+
+        # Expense
+        if expense_mode == 'daily':
+            # Daily expense: create Transaction for specific day only (vai para coluna "Diário")
+            # Usa marcador [DIARIO] na descrição para identificar no compute_projection
+            tx = Transaction.objects.create(
+                account=acc,
+                category=cat,
+                amount=amount,
+                kind='expense',
+                date=d,
+                description=f'[DIARIO] {desc}' if desc else '[DIARIO] Despesa diária'
+            )
+            return Response({
+                'id': tx.id,
+                'kind': 'expense',
+                'amount': amount,
+                'date': d.isoformat(),
+                'note': 'Despesa registrada na coluna Diário (substitui valor variável)'
+            }, status=201)
+        else:
+            # expense_mode == 'fixed'
+            if recurrence == 'monthly':
+                # Despesa fixa recorrente mensal -> FixedExpense (vai para "Saída")
+                fx = FixedExpense.objects.create(
+                    user=request.user,
+                    name=desc or 'Despesa Fixa',
+                    amount=amount,
+                    due_day=d.day,
+                    periodicity='MENSAL',
+                    pay_early_business_day=False,
+                    paying_account=acc
+                )
+                if bf_date:
+                    FixedExpense.objects.filter(pk=fx.pk).update(created_at=bf_date)
+                return Response({'status': 'ok', 'created': 'fixed_expense', 'amount': amount, 'day': d.day, 'backfill': backfill}, status=201)
+            else:
+                # Despesa fixa pontual (única) -> Transaction SEM marcador (vai para "Saída")
+                tx = Transaction.objects.create(
+                    account=acc,
+                    category=cat,
+                    amount=amount,
+                    kind='expense',
+                    date=d,
+                    description=desc or 'Despesa única'
+                )
+                return Response({
+                    'id': tx.id,
+                    'kind': 'expense',
+                    'amount': amount,
+                    'date': d.isoformat(),
+                    'note': 'Despesa registrada na coluna Saída'
+                }, status=201)

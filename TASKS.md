@@ -45,7 +45,6 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 - Aceite: exporta relatório CSV válido e coerente
 
 ## Sprint 6 (1–2 semanas)
-- [x] UI calendário/timeline com ícones (salário, fixo, variável, fatura, aplicação/resgate)
 - [x] Tabela diária compatível com planilha: Data, Entrada, Saída, Diário, Saldo
 - [x] Indicadores de risco (saldo futuro negativo)
 - [x] Alinhamento com design system; acessibilidade básica
@@ -55,9 +54,123 @@ Observação: este arquivo consolida o plano de sprints (antes em `docs/sprint-p
 ## Ajustes pendentes
 - [x] Projeção (MVP): garantir carry-over exibido na tabela do mês (saldo no dia 01 deve herdar saldo do último dia do mês anterior; onboarding = zero).
 
-## Próximas ações sugeridas
-- [ ] Endpoint de projeção mensal: aceitar `year`/`month` e retornar apenas o intervalo do mês (server-side) para reduzir payload.
-- [ ] Testes automatizados: carry-over entre meses, janeiro (borda), onboarding, e fatura no vencimento.
-- [ ] Caching incremental: invalidar apenas janelas afetadas (quando mudar salário/fixo/variável/fatura).
-- [ ] Normalização de encoding UTF-8 nos templates remanescentes (mojibake).
-- [ ] Documentar parâmetro `onboarding` no README/PRD (comportamento D0).
+### Novos itens
+- [ ] Onboarding: garantir que D0/saldo inicial, SalaryRule, FixedExpenses e VariableBudget reflitam imediatamente no dashboard (sessão + endpoint; validação visual).
+- [ ] Resumo do mês: revisar agregação dos cards (Receitas, Despesas, Performance) após onboarding e eventos; padronizar formatação BRL e precisão.
+- [ ] Dashboard (UX): reposicionar botão “Adicionar evento” para junto da tabela e melhorar UX do modal (atalhos de tipo, validação, mensagens, loading e retorno de sucesso).
+
+## Sprint 7 — Polish, Cleanup & Testing Foundation (1–2 semanas)
+**Objetivo**: Estabilizar funcionalidades atuais, limpar débito técnico, baseline de testes
+
+### Tarefas
+- [ ] Code cleanup
+  - [ ] Remove unused imports (core/views.py: Sum, tx_selectors, Transaction)
+  - [ ] Remove unused variable prev_end_balance
+  - [ ] Fix Pylance warnings
+- [ ] Merge onboarding work
+  - [ ] Commit current changes on feat/pivot-prd-agents-readme
+  - [ ] Review and merge to main
+- [ ] Testing infrastructure
+  - [ ] Setup pytest + pytest-django
+  - [ ] Test: projection carry-over between months
+  - [ ] Test: invoice calculation edge cases
+  - [ ] Test: user isolation (no data leakage)
+  - [ ] Test: onboarding seeds validation
+  - [ ] Test: January without December (edge case)
+- [ ] Documentation
+  - [ ] Document projection algorithm in PRD (detailed pseudocode)
+  - [ ] Document onboarding flow in README
+  - [ ] Document `?onboarding=` parameter behavior
+  - [ ] Add algorithm examples to PRD
+- [ ] Performance baseline
+  - [ ] Measure projection time for 24 months with typical data
+  - [ ] Log baseline metrics for Sprint 9 comparison
+- [ ] UTF-8 validation
+  - [ ] Check all templates for encoding consistency
+  - [ ] Fix any remaining mojibake
+
+**Aceite**: Warnings resolvidos, branch mergeado, ≥5 testes passando, algoritmo documentado, baseline registrado
+
+---
+
+## Sprint 8 — XLSX/CSV Import Wizard (2 semanas)
+**Objetivo**: Implementar o import mapper (PRD RF alta prioridade)
+
+### Tarefas
+- [ ] Backend: importer app
+  - [ ] Create `importer/` Django app
+  - [ ] Service: `import_mapper.py` with parse_xlsx(), parse_csv(), validate_mapping()
+  - [ ] Model: `ImportSession` (track upload state)
+  - [ ] API endpoints:
+    - [ ] `POST /api/import/upload/` → preview
+    - [ ] `POST /api/import/confirm/` → persist
+- [ ] Frontend: wizard UI
+  - [ ] Step 1: Upload file (XLSX/CSV)
+  - [ ] Step 2: Map columns (dropdown matching)
+  - [ ] Step 3: Preview & confirm (show what will be created)
+  - [ ] Template: `templates/importer/wizard.html`
+  - [ ] Smart column detection (name similarity matching)
+- [ ] Validation & error handling
+  - [ ] Required fields validation
+  - [ ] Date format validation (DD-MM-YYYY, YYYY-MM-DD)
+  - [ ] Amount validation (numeric, positive where required)
+  - [ ] Duplicate detection
+  - [ ] Error messages in pt-BR
+- [ ] Template download
+  - [ ] CSV template with example data
+  - [ ] Download link on wizard page
+- [ ] Testing
+  - [ ] Test: happy path (valid file imports correctly)
+  - [ ] Test: validation errors (malformed file)
+  - [ ] Test: column mapping edge cases
+  - [ ] Test: large file handling (1000+ rows)
+- [ ] Documentation
+  - [ ] User guide: how to prepare import file
+  - [ ] API documentation for import endpoints
+
+**Aceite**: Wizard funcional, upload → map → confirm, entidades criadas corretamente, template disponível, testes cobrem happy path + erros
+
+---
+
+## Sprint 9 — Performance Optimization & Cache Strategy (1–2 semanas)
+**Objetivo**: Implementar cache incremental para escalar com datasets grandes
+
+### Tarefas
+- [ ] ProjectionSnapshot caching
+  - [ ] Design cache schema (monthly aggregations)
+  - [ ] Implement cache write (after projection calculation)
+  - [ ] Implement cache read (check before calculation)
+  - [ ] Invalidation logic (detect affected months)
+  - [ ] Selective recalculation (only dirty months)
+- [ ] Cache management API
+  - [ ] `POST /api/projection/invalidate/?start=YYYY-MM&end=YYYY-MM`
+  - [ ] `GET /api/projection/cache-status/` (diagnostics: hit/miss rates)
+- [ ] Projection engine optimization
+  - [ ] Memoize daily variable calculations
+  - [ ] Batch query all entities at start (avoid N+1)
+  - [ ] Profile with django-debug-toolbar
+  - [ ] Optimize timezone conversions
+- [ ] Monthly summary endpoint
+  - [ ] `GET /api/projection/monthly/?year=2025` → 12 aggregated records
+  - [ ] Reduce payload for dashboard (use monthly instead of daily)
+- [ ] Performance testing
+  - [ ] Test: 24-month projection with 50+ entities < 2s
+  - [ ] Test: cache hit reduces time by ≥3x
+  - [ ] Test: invalidation updates correct months
+- [ ] Documentation
+  - [ ] Cache architecture in PRD
+  - [ ] Cache invalidation rules
+  - [ ] Performance benchmarks
+
+**Aceite**: Cache funcional, projeção com cache ≥3x mais rápida, invalidação correta, endpoint mensal reduz payload, performance < 2s para 24 meses
+
+---
+
+## Próximas ações sugeridas (pós-Sprint 9)
+- [ ] Endpoint de projeção mensal: aceitar `year`/`month` e retornar apenas o intervalo do mês (server-side) para reduzir payload
+- [ ] Regras de "adiantar para dia útil anterior" (business days logic)
+- [ ] Ajustes de categoria/mês (override variable budgets per month)
+- [ ] Melhorias no Quick Event (editar eventos, múltiplos eventos no mesmo dia)
+- [ ] Dashboard widgets (receitas vs despesas, trends)
+- [ ] Mobile responsiveness improvements
+- [ ] Metas de economia por subconta
